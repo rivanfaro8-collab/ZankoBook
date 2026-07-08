@@ -1,6 +1,11 @@
-import { Link, type Href } from 'expo-router'
+import { useMutation } from '@tanstack/react-query'
+import { Link, useRouter, type Href } from 'expo-router'
 import { useState } from 'react'
 import { Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
+
+import { login } from '@/api/auth'
+import { saveToken } from '@/lib/authStorage'
+import { useUserStore } from '@/store/userStore'
 
 import ThemedButton from '../../../components/ThemedButton'
 import ThemedLogo from '../../../components/ThemedLogo'
@@ -9,17 +14,57 @@ import ThemedTextInput from '../../../components/ThemedTextInput'
 import ThemedView from '../../../components/ThemedView'
 
 export default function Login() {
+  const router = useRouter()
+
+  const setUser = useUserStore((state) => state.setUser)
+  const setToken = useUserStore((state) => state.setToken)
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
+  const loginMutation = useMutation({
+    mutationFn: login,
+
+    onSuccess: async ({ token, user }) => {
+      await saveToken(token)
+
+      setToken(token)
+      setUser(user)
+
+      if (user.role === 'lecturer') {
+        router.replace('/(lecturer)/home' as Href)
+        return
+      }
+
+      router.replace('/(student)/home' as Href)
+    },
+
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Unable to log in. Please try again.'
+
+      Alert.alert('Login failed', message)
+    },
+  })
+
   const handleLogin = () => {
-    if (!email.trim() || !password) {
-      Alert.alert('Missing details', 'Please enter your Email and password.')
+    const cleanEmail = email.trim()
+
+    if (!cleanEmail || !password) {
+      Alert.alert('Missing details', 'Please enter your email and password.')
       return
     }
 
-    // Backend authentication will be connected here later.
-    console.log('Login submitted', { email: email.trim() })
+    if (loginMutation.isPending) {
+      return
+    }
+
+    loginMutation.mutate({
+      email: cleanEmail,
+      password,
+    })
   }
 
   return (
@@ -33,6 +78,7 @@ export default function Login() {
         <ThemedText title style={styles.title}>
           Welcome to ZankoBook
         </ThemedText>
+
         <ThemedText style={styles.subtitle}>
           Sign in to continue your learning journey.
         </ThemedText>
@@ -41,8 +87,11 @@ export default function Login() {
           value={email}
           onChangeText={setEmail}
           placeholder='Email'
-          autoCapitalize='words'
+          autoCapitalize='none'
           autoCorrect={false}
+          keyboardType='email-address'
+          autoComplete='email'
+          textContentType='emailAddress'
           returnKeyType='next'
           style={styles.input}
         />
@@ -54,6 +103,8 @@ export default function Login() {
           secureTextEntry
           autoCapitalize='none'
           autoCorrect={false}
+          autoComplete='password'
+          textContentType='password'
           returnKeyType='done'
           onSubmitEditing={handleLogin}
           style={styles.input}
@@ -74,7 +125,9 @@ export default function Login() {
           accessibilityLabel='Log in'
           style={styles.loginButton}
         >
-          <ThemedText style={styles.buttonText}>Login</ThemedText>
+          <ThemedText style={styles.buttonText}>
+            {loginMutation.isPending ? 'Logging in...' : 'Login'}
+          </ThemedText>
         </ThemedButton>
       </KeyboardAvoidingView>
     </ThemedView>
