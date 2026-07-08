@@ -1,11 +1,6 @@
 import { create } from 'zustand'
-//creates shared storage for logged-in user and token
-type User = {
-  id: number
-  name: string
-  email: string
-  role: string
-}
+
+import type { User } from '@/types/auth'
 
 type UserStore = {
   user: User | null
@@ -21,3 +16,5 @@ export const useUserStore = create<UserStore>((set) => ({
   setUser: (user) => set({ user }),
   setToken: (token) => set({ token }),
 }))
+
+//creates shared storage for logged-in user and token
