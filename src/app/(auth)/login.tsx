@@ -32,11 +32,11 @@ export default function Login() {
       setUser(user)
 
       if (user.role === 'lecturer') {
-        router.replace('/(lecturer)/home' as Href)
+        router.replace('/(lecturer)/Dashboard' as Href)
         return
       }
 
-      router.replace('/(student)/home' as Href)
+      router.replace('/(student)/Dashboard' as Href)
     },
 
     onError: (error) => {

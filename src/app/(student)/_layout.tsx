@@ -1,5 +1,13 @@
-import { Stack } from 'expo-router'
+import { Tabs } from 'expo-router'
 
-export default function LecturerLayout() {
-  return <Stack screenOptions={{ headerShown: false }} />
+export default function StudentLayout() {
+  return (
+    <Tabs screenOptions={{ headerShown: false }}>
+      <Tabs.Screen name='Letters' options={{ title: 'Requests' }} />
+      <Tabs.Screen name='Assignments' options={{ title: 'Assignments' }} />
+      <Tabs.Screen name='Dashboard' options={{ title: 'Dashboard' }} />
+      <Tabs.Screen name='Notifications' options={{ title: 'Notifications' }} />
+      <Tabs.Screen name='Profile' options={{ title: 'profile' }} />
+    </Tabs>
+  )
 }
