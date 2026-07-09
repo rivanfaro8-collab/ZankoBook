@@ -3,13 +3,13 @@ import { StyleSheet } from 'react-native'
 import ThemedText from '../../../components/ThemedText'
 import ThemedView from '../../../components/ThemedView'
 
-export default function LecturerLetters() {
+export default function LecturerNotifications() {
   return (
     <ThemedView style={styles.container}>
       <ThemedText title style={styles.title}>
-        Letters
+        Notifications
       </ThemedText>
-      <ThemedText style={styles.subtitle}>Your letters will appear here.</ThemedText>
+      <ThemedText style={styles.subtitle}>No notifications yet.</ThemedText>
     </ThemedView>
   )
 }
