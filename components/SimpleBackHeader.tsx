@@ -15,9 +15,6 @@ export default function SimpleBackHeader({ title }: SimpleBackHeaderProps) {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}> 
       <View style={styles.row}>
-        <View style={styles.titleSpace}>
-          {title ? null : null}
-        </View>
         <Pressable
           onPress={() => router.back()}
           accessibilityRole='button'
@@ -31,6 +28,9 @@ export default function SimpleBackHeader({ title }: SimpleBackHeaderProps) {
         >
           <Ionicons name='arrow-back-outline' size={24} color={theme.title} />
         </Pressable>
+        <View style={styles.titleSpace}>
+          {title ? null : null}
+        </View>
       </View>
     </SafeAreaView>
   )
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     minHeight: 58,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     paddingHorizontal: 18,
     paddingBottom: 6,
   },
