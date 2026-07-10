@@ -1,15 +1,20 @@
 import { create } from 'zustand'
 
+import { Colors, type AppTheme, type ThemeName } from '../../constants/Colors'
+
 export type ThemeMode = 'light' | 'dark'
 
 type ThemeStore = {
   themeMode: ThemeMode
+  themeName: ThemeName
   toggleTheme: () => void
   setThemeMode: (themeMode: ThemeMode) => void
+  setThemeName: (themeName: ThemeName) => void
 }
 
 export const useThemeStore = create<ThemeStore>((set) => ({
   themeMode: 'light',
+  themeName: 'teal',
 
   toggleTheme: () =>
     set((state) => ({
@@ -17,4 +22,15 @@ export const useThemeStore = create<ThemeStore>((set) => ({
     })),
 
   setThemeMode: (themeMode) => set({ themeMode }),
+  setThemeName: (themeName) => set({ themeName }),
 }))
+
+export const getAppTheme = (themeName: ThemeName, themeMode: ThemeMode): AppTheme =>
+  Colors.themes[themeName][themeMode]
+
+export const useAppTheme = () => {
+  const themeMode = useThemeStore((state) => state.themeMode)
+  const themeName = useThemeStore((state) => state.themeName)
+
+  return getAppTheme(themeName, themeMode)
+}
