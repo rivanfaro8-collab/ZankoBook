@@ -2,8 +2,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useEffect, useRef, useState } from 'react'
 import { Animated, Pressable, StyleSheet, View } from 'react-native'
 
-import { Colors } from '../constants/Colors'
-import { useThemeStore } from '../src/store/themeStore'
+import { useAppTheme, useThemeStore } from '../src/store/themeStore'
 import ThemedText from './ThemedText'
 import ThemedView from './ThemedView'
 
@@ -19,7 +18,7 @@ export default function AppHeader({ onMenuPress }: AppHeaderProps) {
 
   const themeMode = useThemeStore((state) => state.themeMode)
   const toggleTheme = useThemeStore((state) => state.toggleTheme)
-  const theme = themeMode === 'dark' ? Colors.dark : Colors.light
+  const theme = useAppTheme()
   const iconColor = theme.title
   const themeIconColor = themeMode === 'dark' ? '#EAF8FF' : '#F59E0B'
 

@@ -1,31 +1,203 @@
+export type ThemeName = 'teal' | 'green' | 'orange' | 'pink' | 'midnight' | 'blue'
+
+export type AppTheme = {
+  text: string
+  title: string
+  background: string
+  navBackground: string
+  iconColor: string
+  iconColorFocused: string
+  uiBackground: string
+  border: string
+  primary: string
+  accent: string
+  danger: string
+}
+
+const themePalettes: Record<ThemeName, { light: AppTheme; dark: AppTheme; swatch: string }> = {
+  teal: {
+    swatch: '#008080',
+    light: {
+      text: '#607777',
+      title: '#183838',
+      background: '#FFFFFF',
+      navBackground: '#008080',
+      iconColor: '#ffffff',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#E6F4F2',
+      border: '#C9E7E3',
+      primary: '#008080',
+      accent: '#009689',
+      danger: '#D94A4A',
+    },
+    dark: {
+      text: '#E6F4F2',
+      title: '#FFFFFF',
+      background: '#102525',
+      navBackground: '#008080',
+      iconColor: '#ffffff',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#183838',
+      border: '#009689',
+      primary: '#009689',
+      accent: '#37C7B7',
+      danger: '#FF6B6B',
+    },
+  },
+  green: {
+    swatch: '#22C55E',
+    light: {
+      text: '#506055',
+      title: '#183321',
+      background: '#FFFFFF',
+      navBackground: '#16A34A',
+      iconColor: '#FFFFFF',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#EAF8EF',
+      border: '#BDE8CB',
+      primary: '#16A34A',
+      accent: '#22C55E',
+      danger: '#D94A4A',
+    },
+    dark: {
+      text: '#EAF8EF',
+      title: '#FFFFFF',
+      background: '#102217',
+      navBackground: '#16A34A',
+      iconColor: '#FFFFFF',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#193B25',
+      border: '#22C55E',
+      primary: '#22C55E',
+      accent: '#86EFAC',
+      danger: '#FF6B6B',
+    },
+  },
+  orange: {
+    swatch: '#F97316',
+    light: {
+      text: '#6F5B4B',
+      title: '#3F2412',
+      background: '#FFFFFF',
+      navBackground: '#EA580C',
+      iconColor: '#FFFFFF',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#FFF1E8',
+      border: '#FFD1B5',
+      primary: '#EA580C',
+      accent: '#F97316',
+      danger: '#D94A4A',
+    },
+    dark: {
+      text: '#FFF1E8',
+      title: '#FFFFFF',
+      background: '#27180E',
+      navBackground: '#EA580C',
+      iconColor: '#FFFFFF',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#3A2415',
+      border: '#F97316',
+      primary: '#F97316',
+      accent: '#FDBA74',
+      danger: '#FF6B6B',
+    },
+  },
+  pink: {
+    swatch: '#F472B6',
+    light: {
+      text: '#685260',
+      title: '#3A1730',
+      background: '#FFFFFF',
+      navBackground: '#DB2777',
+      iconColor: '#FFFFFF',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#FDF2F8',
+      border: '#FBCFE8',
+      primary: '#DB2777',
+      accent: '#F472B6',
+      danger: '#D94A4A',
+    },
+    dark: {
+      text: '#FDF2F8',
+      title: '#FFFFFF',
+      background: '#271020',
+      navBackground: '#DB2777',
+      iconColor: '#FFFFFF',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#3A1730',
+      border: '#F472B6',
+      primary: '#F472B6',
+      accent: '#F9A8D4',
+      danger: '#FF6B6B',
+    },
+  },
+  midnight: {
+    swatch: '#111827',
+    light: {
+      text: '#5B6472',
+      title: '#111827',
+      background: '#FFFFFF',
+      navBackground: '#111827',
+      iconColor: '#FFFFFF',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#F1F5F9',
+      border: '#CBD5E1',
+      primary: '#111827',
+      accent: '#475569',
+      danger: '#D94A4A',
+    },
+    dark: {
+      text: '#E5E7EB',
+      title: '#FFFFFF',
+      background: '#020617',
+      navBackground: '#111827',
+      iconColor: '#FFFFFF',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#111827',
+      border: '#334155',
+      primary: '#94A3B8',
+      accent: '#CBD5E1',
+      danger: '#FF6B6B',
+    },
+  },
+  blue: {
+    swatch: '#5B7FAE',
+    light: {
+      text: '#536173',
+      title: '#182B44',
+      background: '#FFFFFF',
+      navBackground: '#3B6EA8',
+      iconColor: '#FFFFFF',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#EEF5FF',
+      border: '#C9DCF2',
+      primary: '#3B6EA8',
+      accent: '#5B7FAE',
+      danger: '#D94A4A',
+    },
+    dark: {
+      text: '#EEF5FF',
+      title: '#FFFFFF',
+      background: '#0E1A2A',
+      navBackground: '#3B6EA8',
+      iconColor: '#FFFFFF',
+      iconColorFocused: '#FFFFFF',
+      uiBackground: '#182B44',
+      border: '#5B7FAE',
+      primary: '#78A6DA',
+      accent: '#B8D7F7',
+      danger: '#FF6B6B',
+    },
+  },
+}
+
 export const Colors = {
-  primary: '#008080',
-  accent: '#009689',
-
+  primary: themePalettes.teal.light.primary,
+  accent: themePalettes.teal.light.accent,
   warning: '#ab2525',
-
   white: '#FFFFFF',
   black: '#000000',
-
-  dark: {
-    text: '#E6F4F2',
-    title: '#FFFFFF',
-    background: '#102525',
-    navBackground: '#008080',
-    iconColor: '#ffffff',
-    iconColorFocused: '#FFFFFF',
-    uiBackground: '#183838',
-    border: '#009689',
-  },
-
-  light: {
-    text: '#607777',
-    title: '#183838',
-    background: '#FFFFFF',
-    navBackground: '#008080',
-    iconColor: '#ffffff',
-    iconColorFocused: '#FFFFFF',
-    uiBackground: '#E6F4F2',
-    border: '#C9E7E3',
-  },
+  dark: themePalettes.teal.dark,
+  light: themePalettes.teal.light,
+  themes: themePalettes,
 } as const

@@ -1,7 +1,6 @@
 import { TextInput, type TextInputProps } from 'react-native'
 
-import { Colors } from '../constants/Colors'
-import { useThemeStore } from '../src/store/themeStore'
+import { useAppTheme } from '../src/store/themeStore'
 
 type ThemedTextInputProps = TextInputProps
 
@@ -10,8 +9,7 @@ export default function ThemedTextInput({
   placeholderTextColor,
   ...props
 }: ThemedTextInputProps) {
-  const themeMode = useThemeStore((state) => state.themeMode)
-  const theme = themeMode === 'dark' ? Colors.dark : Colors.light
+  const theme = useAppTheme()
 
   return (
     <TextInput
