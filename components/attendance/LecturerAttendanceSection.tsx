@@ -70,7 +70,10 @@ export default function LecturerAttendanceSection({ courseId }: Props) {
     if (!selectedWeekId || !recordsQuery.data) return
     const next: AttendanceMap = {}
     recordsQuery.data.forEach((record) => {
-      next[record.student_id] = record.status
+      const studentId = record.student?.id ?? record.student_id
+      if (studentId !== undefined) {
+        next[studentId] = record.status
+      }
     })
     setAttendance(next)
   }, [recordsQuery.data, selectedWeekId])
@@ -115,7 +118,7 @@ export default function LecturerAttendanceSection({ courseId }: Props) {
     mutationFn: () =>
       submitAttendanceRecords(
         {
-          records: Object.entries(attendance).map(([studentId, status]) => ({
+          attendance: Object.entries(attendance).map(([studentId, status]) => ({
             student_id: Number(studentId),
             status,
           })),
