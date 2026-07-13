@@ -72,12 +72,11 @@ export async function getAttendanceRecords(
 export async function submitAttendanceRecords(
   payload: SaveAttendancePayload,
   weekId: number,
-): Promise<AttendanceRecord[]> {
+): Promise<void> {
   const response = await api.post<RecordAttendanceResponse>(
     `/api/moodle/attendance-sessions/${weekId}/attendance`,
     payload,
   )
-  const { success, message, data } = response.data
+  const { success, message } = response.data
   if (!success) throw new Error(message)
-  return data
 }

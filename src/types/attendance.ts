@@ -27,9 +27,13 @@ export type CourseStudent = {
 
 export type AttendanceRecord = {
   id?: number
-  student_id: number
+  attendance_session_id?: number
+  student_id?: number
+  student: CourseStudent
   status: AttendanceStatus
-  student?: CourseStudent
+  note?: string | null
+  created_at?: string
+  updated_at?: string
 }
 
 export type CreateAttendanceWeekPayload = {
@@ -41,9 +45,10 @@ export type CreateAttendanceWeekPayload = {
 }
 
 export type SaveAttendancePayload = {
-  records: Array<{
+  attendance: Array<{
     student_id: number
     status: AttendanceStatus
+    note?: string
   }>
 }
 
@@ -60,4 +65,4 @@ export type GetCourseStudentsResponse = ApiResponse<{
 export type GetAttendanceWeeksResponse = ApiResponse<AttendanceWeek[]>
 export type CreateAttendanceWeekResponse = ApiResponse<AttendanceWeek>
 export type GetAttendanceRecordsResponse = ApiResponse<AttendanceRecord[]>
-export type RecordAttendanceResponse = ApiResponse<AttendanceRecord[]>
+export type RecordAttendanceResponse = ApiResponse<null>
