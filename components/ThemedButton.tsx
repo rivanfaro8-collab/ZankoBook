@@ -4,16 +4,22 @@ import { useAppTheme } from '../src/store/themeStore'
 
 type ThemedButtonProps = PressableProps
 
-export default function ThemedButton({ style, ...props }: ThemedButtonProps) {
+export default function ThemedButton({
+  style,
+  disabled,
+  ...props
+}: ThemedButtonProps) {
   const theme = useAppTheme()
 
   return (
     <Pressable
       {...props}
+      disabled={disabled}
       style={(state) => [
         styles.button,
         { backgroundColor: theme.primary },
-        state.pressed && styles.pressed,
+        state.pressed && !disabled && styles.pressed,
+        disabled && styles.disabled,
         typeof style === 'function' ? style(state) : style,
       ]}
     />
@@ -28,5 +34,8 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.65,
+  },
+  disabled: {
+    opacity: 0.55,
   },
 })

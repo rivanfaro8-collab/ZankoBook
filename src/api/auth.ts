@@ -6,6 +6,11 @@ import type {
   UserRole,
 } from '@/types/auth'
 
+type LogoutResponse = {
+  success: boolean
+  message: string
+}
+
 export async function login(payload: LoginPayload): Promise<LoginResult> {
   const response = await api.post<LoginResponse>(
     '/api/auth/moodle/login',
@@ -30,5 +35,14 @@ export async function login(payload: LoginPayload): Promise<LoginResult> {
       ...result.data.user,
       role: backendRole as UserRole,
     },
+  }
+}
+
+export async function logout(): Promise<void> {
+  const response = await api.post<LogoutResponse>('/api/auth/logout')
+  const result = response.data
+
+  if (!result.success) {
+    throw new Error(result.message || 'Logout failed')
   }
 }

@@ -1,10 +1,23 @@
 import { Ionicons } from '@expo/vector-icons'
+import { useMutation } from '@tanstack/react-query'
+import { useState } from 'react'
 import { router } from 'expo-router'
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import {
+  Alert,
+  InteractionManager,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Colors, type ThemeName } from '../constants/Colors'
+import { logout } from '../src/api/auth'
+import { removeSavedToken } from '../src/lib/authStorage'
+import { queryClient } from '../src/lib/queryClient'
 import { useAppTheme, useThemeStore } from '../src/store/themeStore'
+import { useUserStore } from '../src/store/userStore'
 import ThemedText from './ThemedText'
 
 type AppDrawerProps = {
@@ -20,6 +33,51 @@ export default function AppDrawer({ role, onClose }: AppDrawerProps) {
   const themeName = useThemeStore((state) => state.themeName)
   const setThemeName = useThemeStore((state) => state.setThemeName)
   const themeMode = useThemeStore((state) => state.themeMode)
+  const setUser = useUserStore((state) => state.setUser)
+  const setToken = useUserStore((state) => state.setToken)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const clearLocalSession = async () => {
+    await removeSavedToken()
+    setToken(null)
+    setUser(null)
+    queryClient.clear()
+  }
+
+  const logoutMutation = useMutation({
+    mutationFn: logout,
+    onSuccess: async () => {
+      // Close the native drawer first. Replacing the navigation tree while the
+      // drawer is still mounted can make Android Fabric attach the same view
+      // twice and crash with: "The specified child already has a parent."
+      onClose()
+
+      InteractionManager.runAfterInteractions(() => {
+        void (async () => {
+          await clearLocalSession()
+          router.replace('/(auth)/login' as never)
+        })()
+      })
+    },
+    onError: (error) => {
+      setIsLoggingOut(false)
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Unable to log out. Please try again.'
+
+      Alert.alert('Logout failed', message)
+    },
+  })
+
+  const handleLogout = () => {
+    if (isLoggingOut || logoutMutation.isPending) {
+      return
+    }
+
+    setIsLoggingOut(true)
+    logoutMutation.mutate()
+  }
 
   const initials = USER_NAME.split(' ')
     .map((part) => part[0])
@@ -104,18 +162,20 @@ export default function AppDrawer({ role, onClose }: AppDrawerProps) {
 
       <View style={styles.footer}>
         <Pressable
-          onPress={() => {
-            onClose()
-            router.replace('/(auth)/login' as never)
-          }}
+          onPress={handleLogout}
+          disabled={isLoggingOut}
+          accessibilityRole='button'
+          accessibilityLabel='Log out'
           style={({ pressed }) => [
             styles.logoutButton,
             { backgroundColor: theme.danger },
-            pressed && styles.pressed,
+            (pressed || isLoggingOut) && styles.pressed,
           ]}
         >
           <Ionicons name='log-out-outline' size={22} color='#FFFFFF' />
-          <ThemedText style={styles.logoutText}>Logout</ThemedText>
+          <ThemedText style={styles.logoutText}>
+            {isLoggingOut ? 'Logging out...' : 'Logout'}
+          </ThemedText>
         </Pressable>
       </View>
     </SafeAreaView>
