@@ -6,11 +6,14 @@ import { Pressable, StyleSheet, View } from 'react-native'
 import { useAppTheme } from '../src/store/themeStore'
 import ThemedText from './ThemedText'
 import ThemedView from './ThemedView'
+import LecturerAttendanceSection from './attendance/LecturerAttendanceSection'
 
 type CourseSection = 'content' | 'attendance' | 'grades'
 
 type CoursePageShellProps = {
+  courseId: number
   courseName: string
+  attendanceMode?: 'lecturer' | 'student'
 }
 
 const sections: Array<{ key: CourseSection; label: string }> = [
@@ -29,7 +32,11 @@ const getCourseTitleFontSize = (name: string) => {
   return 21
 }
 
-export default function CoursePageShell({ courseName }: CoursePageShellProps) {
+export default function CoursePageShell({
+  courseId,
+  courseName,
+  attendanceMode = 'student',
+}: CoursePageShellProps) {
   const router = useRouter()
   const theme = useAppTheme()
   const [activeSection, setActiveSection] = useState<CourseSection>('content')
@@ -86,11 +93,7 @@ export default function CoursePageShell({ courseName }: CoursePageShellProps) {
             { opacity: pressed ? 0.65 : 1 },
           ]}
         >
-          <Ionicons
-            name='information-circle-outline'
-            size={30}
-            color={theme.title}
-          />
+          <Ionicons name='information-circle-outline' size={30} color={theme.title} />
         </Pressable>
       </View>
 
@@ -116,9 +119,7 @@ export default function CoursePageShell({ courseName }: CoursePageShellProps) {
                 styles.sectionButton,
                 {
                   borderBottomColor: active ? theme.primary : 'transparent',
-                  backgroundColor: pressed
-                    ? theme.uiBackground
-                    : theme.background,
+                  backgroundColor: pressed ? theme.uiBackground : theme.background,
                 },
               ]}
             >
@@ -136,14 +137,20 @@ export default function CoursePageShell({ courseName }: CoursePageShellProps) {
         })}
       </View>
 
-      <View style={styles.pageContent}>
-        <ThemedText title style={styles.placeholderTitle}>
-          {sections.find((section) => section.key === activeSection)?.label}
-        </ThemedText>
-        <ThemedText style={styles.placeholderText}>
-          This section is ready for backend integration.
-        </ThemedText>
-      </View>
+      {activeSection === 'attendance' && attendanceMode === 'lecturer' ? (
+        <LecturerAttendanceSection courseId={courseId} />
+      ) : (
+        <View style={styles.pageContent}>
+          <ThemedText title style={styles.placeholderTitle}>
+            {sections.find((section) => section.key === activeSection)?.label}
+          </ThemedText>
+          <ThemedText style={styles.placeholderText}>
+            {activeSection === 'attendance'
+              ? 'Student attendance view will be connected when its endpoint is provided.'
+              : 'This section is ready for backend integration.'}
+          </ThemedText>
+        </View>
+      )}
     </ThemedView>
   )
 }
