@@ -1,14 +1,15 @@
 import { Ionicons } from '@expo/vector-icons'
 import { Pressable, StyleSheet, View } from 'react-native'
 
-import ThemedText from './ThemedText'
-import type { Course } from '../src/types/course'
 import { useAppTheme } from '../src/store/themeStore'
+import type { Course } from '../src/types/course'
 import { getCourseColor } from '../src/utils/courseColors'
+import ThemedText from './ThemedText'
 
 type CourseCardProps = {
   course: Course
   pinned: boolean
+  onPress: () => void
   onTogglePin: () => void
 }
 
@@ -35,6 +36,7 @@ const getCourseCodeFontSize = (code: string) => {
 export default function CourseCard({
   course,
   pinned,
+  onPress,
   onTogglePin,
 }: CourseCardProps) {
   const theme = useAppTheme()
@@ -43,12 +45,17 @@ export default function CourseCard({
   const studentLabel = course.students_count === 1 ? 'student' : 'students'
 
   return (
-    <View
-      style={[
+    <Pressable
+      accessibilityRole='button'
+      accessibilityLabel={`Open ${course.name}`}
+      onPress={onPress}
+      style={({ pressed }) => [
         styles.card,
         {
-          backgroundColor: theme.background,
+          backgroundColor: theme.uiBackground,
           borderColor: theme.border,
+          opacity: pressed ? 0.96 : 1,
+          transform: [{ scale: pressed ? 0.995 : 1 }],
         },
       ]}
     >
@@ -77,7 +84,10 @@ export default function CourseCard({
             accessibilityLabel={
               pinned ? `Unpin ${course.name}` : `Pin ${course.name}`
             }
-            onPress={onTogglePin}
+            onPress={(event) => {
+              event.stopPropagation()
+              onTogglePin()
+            }}
             hitSlop={10}
             style={({ pressed }) => [
               styles.pinButton,
@@ -130,7 +140,7 @@ export default function CourseCard({
           </View>
         </View>
       </View>
-    </View>
+    </Pressable>
   )
 }
 

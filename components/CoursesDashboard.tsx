@@ -1,16 +1,17 @@
 import { Ionicons } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native'
 
+import ThemedText from './ThemedText'
+import ThemedView from './ThemedView'
 import { getLecturerCourses, getStudentCourses } from '../src/api/courses'
 import { useCoursePinsStore } from '../src/store/coursePinsStore'
 import { useAppTheme } from '../src/store/themeStore'
 import { useUserStore } from '../src/store/userStore'
 import type { UserRole } from '../src/types/auth'
 import type { Course } from '../src/types/course'
-import ThemedText from './ThemedText'
-import ThemedView from './ThemedView'
 
 import CourseCard from './CourseCard'
 
@@ -20,6 +21,7 @@ type CoursesDashboardProps = {
 
 export default function CoursesDashboard({ role }: CoursesDashboardProps) {
   const theme = useAppTheme()
+  const router = useRouter()
   const user = useUserStore((state) => state.user)
   const pinnedByScope = useCoursePinsStore((state) => state.pinnedByScope)
   const loadedScopes = useCoursePinsStore((state) => state.loadedScopes)
@@ -61,6 +63,18 @@ export default function CoursesDashboard({ role }: CoursesDashboardProps) {
     <CourseCard
       course={item}
       pinned={pinnedIds.includes(item.id)}
+      onPress={() =>
+        router.push({
+          pathname:
+            role === 'lecturer'
+              ? '/(lecturer)/course/[courseId]'
+              : '/(student)/course/[courseId]',
+          params: {
+            courseId: String(item.id),
+            courseName: item.name,
+          },
+        })
+      }
       onTogglePin={() => void togglePin(scopeKey, item.id)}
     />
   )
@@ -69,9 +83,7 @@ export default function CoursesDashboard({ role }: CoursesDashboardProps) {
     return (
       <ThemedView style={styles.centeredState}>
         <ActivityIndicator size='large' color={theme.primary} />
-        <ThemedText style={styles.stateText}>
-          Loading your courses...
-        </ThemedText>
+        <ThemedText style={styles.stateText}>Loading your courses...</ThemedText>
       </ThemedView>
     )
   }
@@ -101,7 +113,16 @@ export default function CoursesDashboard({ role }: CoursesDashboardProps) {
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={<View style={styles.header}></View>}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <ThemedText title style={styles.title}>
+              My Courses
+            </ThemedText>
+            <ThemedText style={styles.subtitle}>
+              Pin important courses to keep them at the top.
+            </ThemedText>
+          </View>
+        }
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons name='book-outline' size={48} color={theme.text} />
