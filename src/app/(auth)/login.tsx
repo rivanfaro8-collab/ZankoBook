@@ -25,11 +25,18 @@ export default function Login() {
   const loginMutation = useMutation({
     mutationFn: login,
 
-    onSuccess: async ({ token, user }) => {
-      await saveToken(token)
-
+    onSuccess: ({ token, user }) => {
+      // Update in-memory auth immediately so navigation does not wait for the
+      // comparatively slow Android SecureStore write.
       setToken(token)
       setUser(user)
+
+      void saveToken(token).catch(() => {
+        Alert.alert(
+          'Session warning',
+          'You are logged in, but the session could not be saved on this device.',
+        )
+      })
 
       if (user.role === 'lecturer') {
         router.replace('/(lecturer)/Dashboard' as Href)
@@ -123,6 +130,7 @@ export default function Login() {
           onPress={handleLogin}
           accessibilityRole='button'
           accessibilityLabel='Log in'
+          disabled={loginMutation.isPending}
           style={styles.loginButton}
         >
           <ThemedText style={styles.buttonText}>
