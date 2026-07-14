@@ -4,6 +4,22 @@ export type CourseDepartment = {
   code: string | null
   faculty_id: number
   is_active: number | null
+  course_selection_starts_at: string | null
+  course_selection_ends_at: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+export type CourseTeacherUser = {
+  id: number
+  name: string
+}
+
+export type CourseTeacher = {
+  id: number
+  title: string | null
+  speciality: string | null
+  user: CourseTeacherUser
   created_at: string | null
   updated_at: string | null
 }
@@ -16,9 +32,17 @@ export type Course = {
   year_level: number
   is_active: number
   department_id: number
+  semester: string | null
   students_count: number
   sections_count: number
   department: CourseDepartment
+
+  /*
+   * The student courses endpoint includes teachers.
+   * The lecturer courses endpoint currently does not include them.
+   */
+  teachers?: CourseTeacher[]
+
   created_at: string
   updated_at: string
 }
@@ -26,7 +50,5 @@ export type Course = {
 export type CoursesApiResponse = {
   success: boolean
   message: string
-  data: {
-    courses: Course[]
-  }
+  data: Course[]
 }
