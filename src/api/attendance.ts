@@ -12,8 +12,6 @@ import type {
   SaveAttendancePayload,
 } from '../types/attendance'
 
-const wait = (milliseconds = 350) =>
-  new Promise((resolve) => setTimeout(resolve, milliseconds))
 export async function createAttendanceWeek(
   payload: CreateAttendanceWeekPayload,
 ): Promise<AttendanceWeek> {
@@ -50,8 +48,7 @@ export async function getAttendanceWeeks(
   courseId: number,
 ): Promise<AttendanceWeek[]> {
   const response = await api.get<GetAttendanceWeeksResponse>(
-    '/api/moodle/attendance-sessions',
-    { params: { course_id: courseId } },
+    `/api/moodle/attendance-sessions?filter[course_id]=${courseId}`,
   )
   const { success, message, data } = response.data
   if (!success) throw new Error(message)

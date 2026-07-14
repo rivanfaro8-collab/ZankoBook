@@ -12,7 +12,10 @@ import {
   View,
 } from 'react-native'
 
-import { createAttendanceWeek } from '../../src/api/attendance'
+import {
+  createAttendanceWeek,
+  getAttendanceWeeks,
+} from '../../src/api/attendance'
 import { useAppTheme } from '../../src/store/themeStore'
 import type { AttendanceWeek } from '../../src/types/attendance'
 import ThemedText from '../ThemedText'
@@ -89,15 +92,31 @@ export default function AddAttendanceSessionModal({
   }, [calendarMonth])
 
   const mutation = useMutation({
-    mutationFn: createAttendanceWeek,
-    onSuccess: (week) => {
-      queryClient.setQueryData<AttendanceWeek[]>(
-        ['attendance-weeks', courseId],
-        (current = []) => {
-          if (current.some((item) => item.id === week.id)) return current
-          return [...current, week]
-        },
+    mutationFn: async (payload: Parameters<typeof createAttendanceWeek>[0]) => {
+      const createdWeek = await createAttendanceWeek(payload)
+
+      await queryClient.invalidateQueries({
+        queryKey: ['attendance-weeks', courseId],
+      })
+
+      const persistedWeeks = await queryClient.fetchQuery({
+        queryKey: ['attendance-weeks', courseId],
+        queryFn: () => getAttendanceWeeks(courseId),
+      })
+
+      const persistedWeek = persistedWeeks.find(
+        (week) => Number(week.id) === Number(createdWeek.id),
       )
+
+      if (!persistedWeek) {
+        throw new Error(
+          'The server accepted the session, but it was not saved. Please check the backend create-session endpoint.',
+        )
+      }
+
+      return persistedWeek
+    },
+    onSuccess: (week) => {
       onCreated(week)
       onClose()
     },

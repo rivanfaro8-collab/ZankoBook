@@ -47,6 +47,14 @@ export default function LecturerAttendanceSection({ courseId }: Props) {
   })
 
   useEffect(() => {
+    setModalVisible(false)
+    setSelectedWeekId(null)
+    setAttendance({})
+    didChooseInitialWeek.current = false
+    shouldScrollToEnd.current = false
+  }, [courseId])
+
+  useEffect(() => {
     if (didChooseInitialWeek.current || selectedWeekId !== null) return
     const firstWeek = weeksQuery.data?.[0]
     if (!firstWeek) return
@@ -61,7 +69,7 @@ export default function LecturerAttendanceSection({ courseId }: Props) {
   })
 
   const recordsQuery = useQuery({
-    queryKey: ['attendance-records', selectedWeekId],
+    queryKey: ['attendance-records', courseId, selectedWeekId],
     queryFn: () => getAttendanceRecords(selectedWeekId as number),
     enabled: selectedWeekId !== null,
   })
@@ -101,7 +109,9 @@ export default function LecturerAttendanceSection({ courseId }: Props) {
         ['attendance-weeks', courseId],
         (current) => (current ?? []).filter((week) => week.id !== deletedWeekId),
       )
-      queryClient.removeQueries({ queryKey: ['attendance-records', deletedWeekId] })
+      queryClient.removeQueries({
+        queryKey: ['attendance-records', courseId, deletedWeekId],
+      })
       setSelectedWeekId(null)
       setAttendance({})
       Alert.alert('Session deleted', 'The attendance session was deleted successfully.')
@@ -126,7 +136,9 @@ export default function LecturerAttendanceSection({ courseId }: Props) {
         selectedWeekId as number,
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance-records', selectedWeekId] })
+      queryClient.invalidateQueries({
+        queryKey: ['attendance-records', courseId, selectedWeekId],
+      })
       Alert.alert('Saved', 'Attendance records were saved successfully.')
     },
   })
