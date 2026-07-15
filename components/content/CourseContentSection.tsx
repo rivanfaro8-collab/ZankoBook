@@ -21,6 +21,7 @@ import type { CourseSection } from '@/types/course'
 import { useAppTheme } from '@/store/themeStore'
 import ThemedText from '../ThemedText'
 import ThemedTextInput from '../ThemedTextInput'
+import SectionItems from './SectionItems'
 
 type Props = {
   courseId: number
@@ -133,7 +134,12 @@ export default function CourseContentSection({ courseId, mode }: Props) {
     )
   }
 
-  const sections = sectionsQuery.data ?? []
+  const sections = [...(sectionsQuery.data ?? [])].sort((a, b) => {
+    const aTime = a.created_at ? new Date(a.created_at).getTime() : Number.NaN
+    const bTime = b.created_at ? new Date(b.created_at).getTime() : Number.NaN
+    const byDate = aTime - bTime
+    return Number.isNaN(byDate) || byDate === 0 ? a.id - b.id : byDate
+  })
 
   return (
     <View style={styles.container}>
@@ -224,11 +230,7 @@ export default function CourseContentSection({ courseId, mode }: Props) {
 
               {expanded && (
                 <View style={[styles.expandedArea, { borderTopColor: theme.border }]}>
-                  <ThemedText style={styles.emptySectionText}>
-                    {itemCount + submissionCount === 0
-                      ? 'No items have been added to this section yet.'
-                      : 'Section items will be implemented next.'}
-                  </ThemedText>
+                  <SectionItems sectionId={item.id} mode={mode} />
                 </View>
               )}
             </View>
@@ -340,8 +342,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  expandedArea: { borderTopWidth: 1, padding: 16 },
-  emptySectionText: { fontSize: 13, textAlign: 'center' },
+  expandedArea: { borderTopWidth: 1, paddingVertical: 14 },
   centered: {
     flex: 1,
     alignItems: 'center',

@@ -55,12 +55,23 @@ export type CoursesApiResponse = {
 
 export type CourseSectionItem = {
   id: number
-  title?: string | null
-  material_file_name?: string | null
-  material_file_type?: string | null
-  material_file_url?: string | null
-  url?: string | null
-  size?: string | null
+  section_id: number
+  title: string
+  description: string | null
+  type: string
+  material_file_name: string | null
+  material_file_type: string | null
+  material_file_url: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type SectionItemCategory = 'file' | 'link' | 'note' | 'submission'
+
+export type SectionItemFormValues = {
+  title: string
+  description: string
+  url?: string
 }
 
 export type CourseSubmission = {
