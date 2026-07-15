@@ -52,3 +52,43 @@ export type CoursesApiResponse = {
   message: string
   data: Course[]
 }
+
+export type CourseSectionItem = {
+  id: number
+  title?: string | null
+  material_file_name?: string | null
+  material_file_type?: string | null
+  material_file_url?: string | null
+  url?: string | null
+  size?: string | null
+}
+
+export type CourseSubmission = {
+  id: number
+  title: string
+  deadline?: string | null
+  graded_at?: string | null
+  grade?: number | string | null
+  weight?: number | null
+}
+
+export type CourseSection = {
+  id: number
+  title: string
+  course_id?: number
+  course?: Course
+  items?: CourseSectionItem[]
+  submissions?: CourseSubmission[]
+  created_at?: string
+  updated_at?: string
+}
+
+export type CourseSectionPayload = {
+  title: string
+}
+
+export type CourseSectionsApiResponse = {
+  success: boolean
+  message: string
+  data: CourseSection[] | { data: CourseSection[] }
+}
