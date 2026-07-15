@@ -7,6 +7,7 @@ import { useAppTheme } from '../src/store/themeStore'
 import ThemedText from './ThemedText'
 import ThemedView from './ThemedView'
 import LecturerAttendanceSection from './attendance/LecturerAttendanceSection'
+import CourseContentSection from './content/CourseContentSection'
 
 type CourseSection = 'content' | 'attendance' | 'grades'
 
@@ -137,7 +138,9 @@ export default function CoursePageShell({
         })}
       </View>
 
-      {activeSection === 'attendance' && attendanceMode === 'lecturer' ? (
+      {activeSection === 'content' ? (
+        <CourseContentSection courseId={courseId} mode={attendanceMode} />
+      ) : activeSection === 'attendance' && attendanceMode === 'lecturer' ? (
         <LecturerAttendanceSection courseId={courseId} />
       ) : (
         <View style={styles.pageContent}>
