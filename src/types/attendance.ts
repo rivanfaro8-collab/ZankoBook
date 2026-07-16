@@ -66,3 +66,28 @@ export type GetAttendanceWeeksResponse = ApiResponse<AttendanceWeek[]>
 export type CreateAttendanceWeekResponse = ApiResponse<AttendanceWeek>
 export type GetAttendanceRecordsResponse = ApiResponse<AttendanceRecord[]>
 export type RecordAttendanceResponse = ApiResponse<null>
+export type StudentPersonalAttendanceRecord = {
+  id: number
+  attendance_session_id?: number
+  student_id?: number
+  status: AttendanceStatus
+  note?: string | null
+  attendance_session: {
+    id?: number
+    course_id?: number
+    title?: string | null
+    session_date: string
+    start_at?: string | null
+    end_at?: string | null
+  }
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+export type GetMyAttendanceParams = {
+  course_id?: number
+}
+
+export type GetMyAttendanceResponse =
+  ApiResponse<StudentPersonalAttendanceRecord[]>
+

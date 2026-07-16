@@ -7,7 +7,9 @@ import { useAppTheme } from '../src/store/themeStore'
 import ThemedText from './ThemedText'
 import ThemedView from './ThemedView'
 import LecturerAttendanceSection from './attendance/LecturerAttendanceSection'
+import StudentAttendanceSection from './attendance/StudentAttendanceSection'
 import CourseContentSection from './content/CourseContentSection'
+import StudentGradesSection from './grades/StudentGradesSection'
 
 type CourseSection = 'content' | 'attendance' | 'grades'
 
@@ -142,15 +144,17 @@ export default function CoursePageShell({
         <CourseContentSection courseId={courseId} mode={attendanceMode} />
       ) : activeSection === 'attendance' && attendanceMode === 'lecturer' ? (
         <LecturerAttendanceSection courseId={courseId} />
+      ) : activeSection === 'attendance' ? (
+        <StudentAttendanceSection courseId={courseId} courseName={courseName} />
+      ) : attendanceMode === 'student' ? (
+        <StudentGradesSection courseId={courseId} courseName={courseName} />
       ) : (
         <View style={styles.pageContent}>
           <ThemedText title style={styles.placeholderTitle}>
-            {sections.find((section) => section.key === activeSection)?.label}
+            Grades
           </ThemedText>
           <ThemedText style={styles.placeholderText}>
-            {activeSection === 'attendance'
-              ? 'Student attendance view will be connected when its endpoint is provided.'
-              : 'This section is ready for backend integration.'}
+            Lecturer grades will be connected when their endpoint is provided.
           </ThemedText>
         </View>
       )}
