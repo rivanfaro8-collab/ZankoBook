@@ -9,6 +9,7 @@ import ThemedView from './ThemedView'
 import LecturerAttendanceSection from './attendance/LecturerAttendanceSection'
 import StudentAttendanceSection from './attendance/StudentAttendanceSection'
 import CourseContentSection from './content/CourseContentSection'
+import LecturerGradesSection from './grades/LecturerGradesSection'
 import StudentGradesSection from './grades/StudentGradesSection'
 
 type CourseSection = 'content' | 'attendance' | 'grades'
@@ -142,21 +143,16 @@ export default function CoursePageShell({
 
       {activeSection === 'content' ? (
         <CourseContentSection courseId={courseId} mode={attendanceMode} />
-      ) : activeSection === 'attendance' && attendanceMode === 'lecturer' ? (
-        <LecturerAttendanceSection courseId={courseId} />
       ) : activeSection === 'attendance' ? (
-        <StudentAttendanceSection courseId={courseId} courseName={courseName} />
-      ) : attendanceMode === 'student' ? (
-        <StudentGradesSection courseId={courseId} courseName={courseName} />
+        attendanceMode === 'lecturer' ? (
+          <LecturerAttendanceSection courseId={courseId} />
+        ) : (
+          <StudentAttendanceSection courseId={courseId} courseName={courseName} />
+        )
+      ) : attendanceMode === 'lecturer' ? (
+        <LecturerGradesSection courseId={courseId} />
       ) : (
-        <View style={styles.pageContent}>
-          <ThemedText title style={styles.placeholderTitle}>
-            Grades
-          </ThemedText>
-          <ThemedText style={styles.placeholderText}>
-            Lecturer grades will be connected when their endpoint is provided.
-          </ThemedText>
-        </View>
+        <StudentGradesSection courseId={courseId} courseName={courseName} />
       )}
     </ThemedView>
   )
