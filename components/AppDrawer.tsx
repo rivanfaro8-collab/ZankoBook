@@ -25,14 +25,12 @@ type AppDrawerProps = {
   onClose: () => void
 }
 
-const UNIVERSITY_NAME = 'Zanko University of Applied Sciences and Technology'
-const USER_NAME = 'Rivan Faruq'
-
 export default function AppDrawer({ role, onClose }: AppDrawerProps) {
   const theme = useAppTheme()
   const themeName = useThemeStore((state) => state.themeName)
   const setThemeName = useThemeStore((state) => state.setThemeName)
   const themeMode = useThemeStore((state) => state.themeMode)
+  const user = useUserStore((state) => state.user)
   const setUser = useUserStore((state) => state.setUser)
   const setToken = useUserStore((state) => state.setToken)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -79,7 +77,13 @@ export default function AppDrawer({ role, onClose }: AppDrawerProps) {
     logoutMutation.mutate()
   }
 
-  const initials = USER_NAME.split(' ')
+  const userName = user?.name ?? 'ZankoBook User'
+  const universityName =
+    user?.scopes?.[0]?.scope?.faculty?.university?.name ??
+    'University not assigned'
+  const displayedRole = user?.role ?? role
+
+  const initials = userName.split(' ')
     .map((part) => part[0])
     .join('')
     .slice(0, 2)
@@ -94,7 +98,7 @@ export default function AppDrawer({ role, onClose }: AppDrawerProps) {
     <SafeAreaView style={[styles.drawer, { backgroundColor: theme.background }]}> 
       <View style={[styles.universityBlock, { borderBottomColor: theme.border }]}> 
         <ThemedText title style={styles.universityName} numberOfLines={2} ellipsizeMode='tail'>
-          {UNIVERSITY_NAME}
+          {universityName}
         </ThemedText>
       </View>
 
@@ -106,10 +110,10 @@ export default function AppDrawer({ role, onClose }: AppDrawerProps) {
         </View>
         <View style={styles.userInfo}>
           <ThemedText title style={styles.userName} numberOfLines={1} ellipsizeMode='tail'>
-            {USER_NAME}
+            {userName}
           </ThemedText>
           <ThemedText style={styles.userRole} numberOfLines={1}>
-            {role === 'student' ? 'Student' : 'Lecturer'}
+            {displayedRole === 'student' ? 'Student' : 'Lecturer'}
           </ThemedText>
         </View>
       </View>
