@@ -5,13 +5,22 @@ export type LoginPayload = {
   password: string
 }
 
+export type ApiRole = {
+  id: number
+  name: string
+}
+
 export type UserScope = {
   id: number
+  role?: ApiRole
   scope_type: string
   scope_id: number
   scope: {
     id: number
     name: string
+    course_selection_starts_at?: string
+    course_selection_ends_at?: string
+    is_open?: boolean
     faculty?: {
       id: number
       name: string
@@ -32,12 +41,10 @@ export type User = {
   is_two_factor_enabled: number
   role: UserRole
   scopes: UserScope[]
+  created_at?: string
+  updated_at?: string
 }
 
-type ApiRole = {
-  id: number
-  name: string
-}
 
 type LoginApiUser = Omit<User, 'role'> & {
   roles: ApiRole[]
