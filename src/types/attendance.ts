@@ -70,7 +70,7 @@ export type StudentPersonalAttendanceRecord = {
   id: number
   attendance_session_id?: number
   student_id?: number
-  status: AttendanceStatus
+  status: AttendanceStatus | string
   note?: string | null
   attendance_session: {
     id?: number
