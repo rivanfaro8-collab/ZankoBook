@@ -56,9 +56,9 @@ function LecturerTabs({ onMenuPress }: LecturerTabsProps) {
       <Tabs.Screen
         name='Letters'
         options={{
-          title: 'Letters',
+          title: 'Requests',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'mail' : 'mail-outline'} size={size} color={color} />
+            <Ionicons name={focused ? 'document-text' : 'document-text-outline'} size={size} color={color} />
           ),
         }}
       />

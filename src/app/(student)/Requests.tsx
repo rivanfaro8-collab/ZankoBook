@@ -1,5 +1,5 @@
 import AcademicRequestsScreen from '../../../components/requests/AcademicRequestsScreen'
 
-export default function LecturerRequests() {
+export default function StudentRequests() {
   return <AcademicRequestsScreen />
 }
