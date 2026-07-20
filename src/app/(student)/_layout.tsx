@@ -54,12 +54,12 @@ function StudentTabs({ onMenuPress }: StudentTabsProps) {
         }}
       />
       <Tabs.Screen
-        name='Assignments'
+        name='Calendar'
         options={{
-          title: 'Assignments',
+          title: 'Calendar',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
-              name={focused ? 'clipboard' : 'clipboard-outline'}
+              name={focused ? 'calendar' : 'calendar-outline'}
               size={size}
               color={color}
             />
@@ -103,6 +103,14 @@ function StudentTabs({ onMenuPress }: StudentTabsProps) {
       />
       <Tabs.Screen
         name='downloaded'
+        options={{
+          href: null,
+          headerShown: false,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name='calendar/[eventId]'
         options={{
           href: null,
           headerShown: false,
