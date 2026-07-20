@@ -164,20 +164,32 @@ export default function StudentGradesSection({ courseId, courseName }: Props) {
   const assessments = data?.assessments ?? []
 
   const totals = useMemo(() => {
-    const earned = assessments.reduce(
-      (sum, assessment) => sum + toNumber(assessment.mark),
-      0,
+    const gradedAssessments = assessments.filter(
+      (assessment) => assessment.mark !== null && assessment.mark !== undefined,
     )
-    const possible = assessments.reduce(
-      (sum, assessment) => sum + toNumber(assessment.max_mark),
+
+    const earnedWeight = gradedAssessments.reduce((sum, assessment) => {
+      const mark = toNumber(assessment.mark)
+      const maxMark = toNumber(assessment.max_mark)
+      const weight = toNumber(assessment.weight)
+
+      if (maxMark <= 0 || weight <= 0) return sum
+
+      return sum + (mark / maxMark) * weight
+    }, 0)
+
+    const currentWeight = gradedAssessments.reduce(
+      (sum, assessment) => sum + Math.max(0, toNumber(assessment.weight)),
       0,
     )
 
     return {
-      earned: Math.round(earned * 10) / 10,
-      possible: Math.round(possible * 10) / 10,
+      earned: Math.round(earnedWeight * 10) / 10,
+      possible: Math.round(currentWeight * 10) / 10,
       percentage:
-        possible === 0 ? 0 : Math.min(100, Math.max(0, (earned / possible) * 100)),
+        currentWeight === 0
+          ? 0
+          : Math.min(100, Math.max(0, (earnedWeight / currentWeight) * 100)),
     }
   }, [assessments])
 
@@ -246,7 +258,7 @@ export default function StudentGradesSection({ courseId, courseName }: Props) {
           <ThemedText style={styles.totalEarned}>{formatNumber(totals.earned)}</ThemedText>
           <ThemedText style={styles.totalPossible}>/ {formatNumber(totals.possible)}</ThemedText>
         </View>
-        <ThemedText style={styles.marksLabel}>marks</ThemedText>
+        <ThemedText style={styles.marksLabel}>weighted score</ThemedText>
 
         <View style={styles.summaryProgressTrack}>
           <View style={[styles.summaryProgressFill, { width: `${totals.percentage}%` }]} />

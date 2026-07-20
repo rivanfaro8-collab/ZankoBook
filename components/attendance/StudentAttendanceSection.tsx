@@ -66,6 +66,32 @@ const ALL_STATUSES: AttendanceStatus[] = [
   'Excused Absence',
 ]
 
+const normalizeAttendanceStatus = (status: unknown): AttendanceStatus => {
+  const normalized = String(status ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+
+  switch (normalized) {
+    case 'present':
+    case 'p':
+      return 'Present'
+    case 'late':
+    case 'l':
+      return 'Late'
+    case 'absent':
+    case 'a':
+      return 'Absent'
+    case 'excused':
+    case 'excused absence':
+    case 'e':
+      return 'Excused Absence'
+    default:
+      return 'Absent'
+  }
+}
+
 const parseSessionDate = (record: StudentPersonalAttendanceRecord) => {
   const raw = record.attendance_session?.session_date
   if (!raw) return 0
@@ -112,7 +138,7 @@ export default function StudentAttendanceSection({ courseId, courseName }: Props
     }
 
     sessions.forEach((session) => {
-      if (session.status in next) next[session.status] += 1
+      next[normalizeAttendanceStatus(session.status)] += 1
     })
 
     return next
@@ -127,7 +153,9 @@ export default function StudentAttendanceSection({ courseId, courseName }: Props
   const filteredSessions =
     filter === 'all'
       ? sessions
-      : sessions.filter((session) => session.status === filter)
+      : sessions.filter(
+          (session) => normalizeAttendanceStatus(session.status) === filter,
+        )
 
   if (attendanceQuery.isLoading) {
     return (
@@ -298,7 +326,8 @@ export default function StudentAttendanceSection({ courseId, courseName }: Props
           ]}
         >
           {filteredSessions.map((session, index) => {
-            const config = STATUS_CONFIG[session.status]
+            const normalizedStatus = normalizeAttendanceStatus(session.status)
+            const config = STATUS_CONFIG[normalizedStatus]
             return (
               <View
                 key={session.id}
