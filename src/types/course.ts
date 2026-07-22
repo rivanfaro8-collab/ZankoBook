@@ -74,6 +74,50 @@ export type SectionItemFormValues = {
   url?: string
 }
 
+
+export type SectionSubmissionAttachment = {
+  id: number
+  file_name: string
+  file_type: string
+  file_size: number
+  file_url: string
+}
+
+export type SectionSubmissionAssessment = {
+  id: number
+  course_id: number
+  teacher_id: number
+  academic_year_id: number
+  title: string
+  max_mark: string
+  weight: string
+  due_at: string
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+export type SectionSubmission = {
+  id: number
+  description: string | null
+  course_assessment: SectionSubmissionAssessment
+  section: {
+    id: number
+    title: string
+  }
+  attachments: SectionSubmissionAttachment[]
+  created_at: string
+  updated_at: string
+}
+
+export type SectionSubmissionFormValues = {
+  title: string
+  description: string
+  weight: number
+  maxMark: number
+  dueAt: string
+}
+
 export type CourseSubmission = {
   id: number
   title: string
