@@ -52,7 +52,12 @@ export default function AssignmentRow({
   }
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.uiBackground, borderColor: theme.border }]}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: theme.uiBackground, borderColor: theme.border },
+      ]}
+    >
       <Pressable
         onPress={() => setExpanded((value) => !value)}
         style={({ pressed }) => [styles.row, pressed && styles.pressed]}
@@ -62,7 +67,12 @@ export default function AssignmentRow({
         </View>
 
         <View style={styles.titleContainer}>
-          <ThemedText title style={styles.title}>{assessment.title}</ThemedText>
+          <ThemedText
+            title
+            style={styles.title}
+          >
+            {assessment.title}
+          </ThemedText>
           <ThemedText style={styles.meta}>Due {assessment.due_at}</ThemedText>
           <View style={styles.attachmentSummary}>
             <Ionicons name='attach-outline' size={13} color={theme.text} />
@@ -209,12 +219,12 @@ export default function AssignmentRow({
 }
 
 const styles = StyleSheet.create({
-  card: { width: '80%', alignSelf: 'center', borderWidth: 1, borderRadius: 14, overflow: 'hidden' },
+  card: { width: '94%', alignSelf: 'center', borderWidth: 1, borderRadius: 14, overflow: 'hidden' },
   pressed: { opacity: 0.8 },
   row: { minHeight: 68, padding: 9, flexDirection: 'row', alignItems: 'center', gap: 9 },
   typeIcon: { width: 40, height: 40, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   titleContainer: { flex: 1, minWidth: 0 },
-  title: { fontSize: 14, fontWeight: '800', lineHeight: 19 },
+  title: { fontSize: 15, fontWeight: '800', lineHeight: 21 },
   meta: { marginTop: 3, fontSize: 11 },
   attachmentSummary: { marginTop: 3, flexDirection: 'row', alignItems: 'center', gap: 3 },
   attachmentSummaryText: { fontSize: 10 },
