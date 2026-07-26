@@ -5,6 +5,7 @@ import * as Sharing from 'expo-sharing'
 import { useEffect, useMemo, useState } from 'react'
 import { Alert, Pressable, StyleSheet, View } from 'react-native'
 
+import { saveDownloadedFile } from '@/lib/downloadHistory'
 import { useAppTheme } from '@/store/themeStore'
 import type { CourseSectionItem } from '@/types/course'
 import ThemedText from '../ThemedText'
@@ -37,12 +38,29 @@ export default function SectionItemRow({ item, mode, onEdit, onDelete }: Props) 
   useEffect(() => {
     if (category !== 'file') return
     FileSystem.getInfoAsync(destination).then((info) => {
-      if (info.exists) setLocalUri(info.uri)
+      if (!info.exists) return
+      setLocalUri(info.uri)
+      void saveDownloadedFile({
+        id: `section-item-${item.id}`,
+        title: item.title,
+        fileName: item.material_file_name || safeFileName(item),
+        localUri: info.uri,
+        mimeType: item.material_file_type || undefined,
+        downloadedAt: info.modificationTime
+          ? new Date(info.modificationTime * 1000).toISOString()
+          : new Date().toISOString(),
+      })
     }).catch(() => undefined)
-  }, [category, destination])
+  }, [category, destination, item])
 
   const openFile = async () => {
     if (!localUri) return
+    const info = await FileSystem.getInfoAsync(localUri)
+    if (!info.exists) {
+      setLocalUri(null)
+      Alert.alert('File unavailable', 'This downloaded file no longer exists on the device.')
+      return
+    }
     const available = await Sharing.isAvailableAsync()
     if (!available) {
       Alert.alert('Unable to open file', 'No compatible application is available on this device.')
@@ -81,6 +99,14 @@ export default function SectionItemRow({ item, mode, onEdit, onDelete }: Props) 
       const result = await resumable.downloadAsync()
       if (!result?.uri) throw new Error('The download did not return a local file.')
       setLocalUri(result.uri)
+      await saveDownloadedFile({
+        id: `section-item-${item.id}`,
+        title: item.title,
+        fileName: item.material_file_name || safeFileName(item),
+        localUri: result.uri,
+        mimeType: item.material_file_type || undefined,
+        downloadedAt: new Date().toISOString(),
+      })
       setProgress(null)
     } catch (error) {
       setProgress(null)
