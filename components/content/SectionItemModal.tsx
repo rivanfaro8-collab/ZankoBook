@@ -25,7 +25,7 @@ import type {
 import ThemedText from '../ThemedText'
 import ThemedTextInput from '../ThemedTextInput'
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024
+const MAX_SUBMISSION_FILES_SIZE = 9 * 1024 * 1024
 const WHEEL_ITEM_HEIGHT = 44
 const HOURS = Array.from({ length: 24 }, (_, index) => index)
 const MINUTES = Array.from({ length: 60 }, (_, index) => index)
@@ -75,8 +75,6 @@ type Props = {
   assignment?: SectionSubmission | null
   initialCategory?: SectionItemCategory
   isSaving: boolean
-  isDeletingAttachment?: boolean
-  onDeleteAssignmentAttachment?: (attachmentId: number, fileName: string) => void
   onClose: () => void
   onSubmit: (
     category: SectionItemCategory,
@@ -84,6 +82,7 @@ type Props = {
     file: PickedSectionFile | null,
     submissionValues?: SectionSubmissionFormValues,
     submissionFiles?: PickedSectionFile[],
+    attachmentsMarkedForDeletion?: number[],
   ) => void
 }
 
@@ -99,8 +98,6 @@ export default function SectionItemModal({
   assignment,
   initialCategory = 'file',
   isSaving,
-  isDeletingAttachment = false,
-  onDeleteAssignmentAttachment,
   onClose,
   onSubmit,
 }: Props) {
@@ -113,6 +110,8 @@ export default function SectionItemModal({
   const [url, setUrl] = useState('')
   const [file, setFile] = useState<PickedSectionFile | null>(null)
   const [submissionFiles, setSubmissionFiles] = useState<PickedSectionFile[]>([])
+  const [existingAttachments, setExistingAttachments] = useState<SectionSubmission['attachments']>([])
+  const [attachmentsMarkedForDeletion, setAttachmentsMarkedForDeletion] = useState<number[]>([])
   const [weight, setWeight] = useState('')
   const [maxMark, setMaxMark] = useState('')
   const [dueDate, setDueDate] = useState('')
@@ -151,6 +150,8 @@ export default function SectionItemModal({
     setShowTimePicker(false)
     setFile(null)
     setSubmissionFiles([])
+    setExistingAttachments(assignment?.attachments ?? [])
+    setAttachmentsMarkedForDeletion([])
   }, [assignment?.id, initialCategory, item?.id, visible])
 
   const calendarDays = useMemo(() => {
@@ -210,19 +211,21 @@ export default function SectionItemModal({
       size: asset.size,
     }))
 
-    const tooLarge = picked.find((asset) => (asset.size ?? 0) > MAX_FILE_SIZE)
-    if (tooLarge) {
-      Alert.alert('File too large', `${tooLarge.name} must be 50 MB or smaller.`)
-      return
-    }
-
     if (multiple) {
-      setSubmissionFiles((current) => [
-        ...current,
+      const nextFiles = [
+        ...submissionFiles,
         ...picked.filter(
-          (next) => !current.some((existing) => existing.uri === next.uri),
+          (next) => !submissionFiles.some((existing) => existing.uri === next.uri),
         ),
-      ])
+      ]
+      const totalSize = nextFiles.reduce((sum, selectedFile) => sum + (selectedFile.size ?? 0), 0)
+
+      if (totalSize > MAX_SUBMISSION_FILES_SIZE) {
+        Alert.alert('File too large', 'The total size of selected files must be 9 MB or smaller.')
+        return
+      }
+
+      setSubmissionFiles(nextFiles)
     } else {
       setFile(picked[0] ?? null)
     }
@@ -266,6 +269,7 @@ export default function SectionItemModal({
           dueAt: `${dueDate} ${pad(dueHour)}:${pad(dueMinute)}:00`,
         },
         submissionFiles,
+        attachmentsMarkedForDeletion,
       )
       return
     }
@@ -504,31 +508,43 @@ export default function SectionItemModal({
                   {isEdit && (
                     <View style={styles.attachmentGroup}>
                       <ThemedText title style={styles.attachmentGroupTitle}>
-                        Current attachments ({assignment?.attachments.length ?? 0})
+                        Current attachments ({existingAttachments.length})
                       </ThemedText>
 
-                      {(assignment?.attachments.length ?? 0) === 0 ? (
+                      {existingAttachments.length === 0 ? (
                         <View style={[styles.emptyAttachmentBox, { borderColor: theme.border }]}>
                           <Ionicons name='document-outline' size={18} color={theme.text} />
                           <ThemedText style={styles.helpText}>No attachments uploaded.</ThemedText>
                         </View>
                       ) : (
-                        assignment?.attachments.map((attachment) => (
+                        existingAttachments.map((attachment) => (
                           <View key={attachment.id} style={[styles.currentAttachment, { borderColor: theme.border }]}>
                             <Ionicons name='document-outline' size={18} color={theme.primary} />
                             <ThemedText style={styles.attachmentName} numberOfLines={1}>
                               {attachment.file_name}
                             </ThemedText>
-                            {onDeleteAssignmentAttachment && (
-                              <Pressable
-                                hitSlop={8}
-                                disabled={isDeletingAttachment}
-                                onPress={() => onDeleteAssignmentAttachment(attachment.id, attachment.file_name)}
-                                style={isDeletingAttachment && styles.disabled}
-                              >
-                                <Ionicons name='trash-outline' size={19} color={theme.danger} />
-                              </Pressable>
-                            )}
+                            <Pressable
+                              hitSlop={8}
+                              onPress={() => {
+                                Alert.alert('Delete attachment', `Delete “${attachment.file_name}”?`, [
+                                  { text: 'Cancel', style: 'cancel' },
+                                  {
+                                    text: 'Delete',
+                                    style: 'destructive',
+                                    onPress: () => {
+                                      setExistingAttachments((current) =>
+                                        current.filter((entry) => entry.id !== attachment.id),
+                                      )
+                                      setAttachmentsMarkedForDeletion((current) =>
+                                        current.includes(attachment.id) ? current : [...current, attachment.id],
+                                      )
+                                    },
+                                  },
+                                ])
+                              }}
+                            >
+                              <Ionicons name='trash-outline' size={19} color={theme.danger} />
+                            </Pressable>
                           </View>
                         ))
                       )}
@@ -565,7 +581,7 @@ export default function SectionItemModal({
                       {submissionFiles.length > 0 ? 'Add more attachments' : 'Add optional attachments'}
                     </ThemedText>
                   </Pressable>
-                  <ThemedText style={styles.helpText}>Maximum size per file: 50 MB</ThemedText>
+                  <ThemedText style={styles.helpText}>Maximum total size: 9 MB</ThemedText>
                 </>
               ) : (
                 <>
