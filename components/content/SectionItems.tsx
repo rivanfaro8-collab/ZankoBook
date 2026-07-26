@@ -58,7 +58,7 @@ export default function SectionItems({ sectionId, mode }: Props) {
   const submissionsQuery = useQuery({
     queryKey: submissionsQueryKey,
     queryFn: () => getSectionSubmissions(sectionId),
-    enabled: mode === 'lecturer',
+    enabled: true,
   })
 
   const saveMutation = useMutation({
@@ -161,11 +161,11 @@ export default function SectionItems({ sectionId, mode }: Props) {
     ])
   }
 
-  if (itemsQuery.isLoading || (mode === 'lecturer' && submissionsQuery.isLoading)) {
+  if (itemsQuery.isLoading || submissionsQuery.isLoading) {
     return <ActivityIndicator style={styles.loader} color={theme.primary} />
   }
 
-  if (itemsQuery.isError || (mode === 'lecturer' && submissionsQuery.isError)) {
+  if (itemsQuery.isError || submissionsQuery.isError) {
     const message = itemsQuery.error?.message ?? submissionsQuery.error?.message ?? 'Could not load section content.'
     return (
       <View style={styles.statusBox}>

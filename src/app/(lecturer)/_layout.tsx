@@ -105,6 +105,14 @@ function LecturerTabs({ onMenuPress }: LecturerTabsProps) {
         }}
       />
       <Tabs.Screen
+        name='course/[courseId]/assignment/[assignmentId]/submissions'
+        options={{
+          href: null,
+          headerShown: false,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
         name='guide'
         options={{
           href: null,

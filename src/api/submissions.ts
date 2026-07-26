@@ -146,3 +146,73 @@ export async function deleteSectionSubmissionAttachment(
 
   return unwrap(response.data, 'Could not delete the attachment.')
 }
+
+export async function getMyStudentSubmission(
+  assignmentId: string | number,
+): Promise<import('@/types/course').StudentSubmissionFile[]> {
+  try {
+    const response = await api.get<ApiResponse<import('@/types/course').StudentSubmissionFile[]>>(
+      `/api/moodle/section-submissions/${assignmentId}/my-submission`,
+    )
+    return unwrap(response.data, 'Could not retrieve your submission.')
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'Could not retrieve your submission.'))
+  }
+}
+
+export async function submitStudentFiles(
+  assignmentId: string | number,
+  files: PickedSectionFile[],
+): Promise<import('@/types/course').StudentSubmissionFile[]> {
+  try {
+    const formData = new FormData()
+    files.forEach((file) => {
+      formData.append('files[]', {
+        uri: file.uri,
+        name: file.name,
+        type: file.mimeType || 'application/octet-stream',
+      } as never)
+    })
+
+    const response = await api.post<ApiResponse<import('@/types/course').StudentSubmissionFile[]>>(
+      `/api/moodle/section-submissions/${assignmentId}/submit`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    )
+    return unwrap(response.data, 'Could not submit the files.')
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'Could not submit the files.'))
+  }
+}
+
+export async function deleteStudentSubmissionFile(
+  studentSubmissionId: string | number,
+) {
+  try {
+    const response = await api.delete<ApiResponse<unknown>>(
+      `/api/moodle/student-submissions/${studentSubmissionId}`,
+    )
+    return unwrap(response.data, 'Could not delete the submitted file.')
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'Could not delete the submitted file.'))
+  }
+}
+
+export async function getAllStudentSubmissions(
+  assignmentId: string | number,
+): Promise<import('@/types/course').StudentSubmissionFile[]> {
+  const response = await api.get<ApiResponse<import('@/types/course').StudentSubmissionFile[]>>(
+    `/api/moodle/section-submissions/${assignmentId}/student-submissions`,
+  )
+  return unwrap(response.data, 'Could not retrieve student submissions.')
+}
+
+export async function getStudentSubmission(
+  assignmentId: string | number,
+  studentId: string | number,
+): Promise<import('@/types/course').StudentSubmissionFile[]> {
+  const response = await api.get<ApiResponse<import('@/types/course').StudentSubmissionFile[]>>(
+    `/api/moodle/section-submissions/${assignmentId}/student/${studentId}`,
+  )
+  return unwrap(response.data, 'Could not retrieve the student submission.')
+}

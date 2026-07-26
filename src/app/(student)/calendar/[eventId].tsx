@@ -5,6 +5,7 @@ import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, View } f
 
 import ThemedText from '../../../../components/ThemedText'
 import ThemedView from '../../../../components/ThemedView'
+import StudentSubmissionPanel from '../../../../components/content/StudentSubmissionPanel'
 import { formatLongDate, formatTime } from '../../../../components/calendar/calendarUtils'
 import { getAssignmentDetails } from '../../../api/calendar'
 import { useAppTheme } from '../../../store/themeStore'
@@ -81,9 +82,11 @@ export default function AssignmentDetailsPage() {
             ))}
           </View>
 
-          <View style={[styles.notice, { backgroundColor: theme.uiBackground, borderColor: theme.border }]}>
-            <Ionicons name='information-circle-outline' size={21} color={theme.primary} />
-            <ThemedText style={styles.noticeText}>Submission actions will be available here once the submission API is ready.</ThemedText>
+          <View style={[styles.card, { backgroundColor: theme.uiBackground, borderColor: theme.border }]}>
+            <StudentSubmissionPanel
+              assignmentId={query.data.id}
+              dueAt={query.data.course_assessment.due_at}
+            />
           </View>
         </ScrollView>
       )}

@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useQuery } from '@tanstack/react-query'
+import { router } from 'expo-router'
 import * as Linking from 'expo-linking'
 import { useState } from 'react'
 import { Alert, Pressable, StyleSheet, View } from 'react-native'
@@ -8,6 +9,7 @@ import { getSectionSubmission } from '@/api/submissions'
 import { useAppTheme } from '@/store/themeStore'
 import type { SectionSubmission } from '@/types/course'
 import ThemedText from '../ThemedText'
+import StudentSubmissionPanel, { isAssignmentClosed } from './StudentSubmissionPanel'
 
 type Props = {
   assignment: SectionSubmission
@@ -161,6 +163,45 @@ export default function AssignmentRow({
               ))}
             </View>
           )}
+
+          {mode === 'student' && (
+            <StudentSubmissionPanel
+              assignmentId={displayedAssignment.id}
+              dueAt={assessment.due_at}
+            />
+          )}
+
+          {mode === 'lecturer' && (
+            <View style={styles.reviewArea}>
+              <Pressable
+                disabled={!isAssignmentClosed(assessment.due_at)}
+                onPress={() =>
+                  router.push({
+                    pathname: '/(lecturer)/course/[courseId]/assignment/[assignmentId]/submissions' as never,
+                    params: {
+                      courseId: String(assessment.course_id),
+                      assignmentId: String(displayedAssignment.id),
+                      assignmentTitle: assessment.title,
+                    },
+                  })
+                }
+                style={[
+                  styles.reviewButton,
+                  {
+                    backgroundColor: theme.primary,
+                    opacity: isAssignmentClosed(assessment.due_at) ? 1 : 0.45,
+                  },
+                ]}
+              >
+                <Ionicons name='people-outline' size={18} color='#FFFFFF' />
+                <ThemedText style={styles.reviewButtonText}>View submissions</ThemedText>
+              </Pressable>
+              {!isAssignmentClosed(assessment.due_at) && (
+                <ThemedText style={styles.reviewHint}>Available after the deadline.</ThemedText>
+              )}
+            </View>
+          )}
+
         </View>
       )}
     </View>
@@ -193,4 +234,8 @@ const styles = StyleSheet.create({
   fileName: { fontSize: 12, fontWeight: '700' },
   fileMeta: { marginTop: 2, fontSize: 10 },
   attachmentDelete: { width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  reviewArea: { gap: 6 },
+  reviewButton: { minHeight: 44, borderRadius: 11, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7 },
+  reviewButtonText: { color: '#FFFFFF', fontWeight: '800' },
+  reviewHint: { textAlign: 'center', fontSize: 11 },
 })
