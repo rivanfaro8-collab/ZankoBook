@@ -124,7 +124,9 @@ export default function SectionItemRow({ item, mode, onEdit, onDelete }: Props) 
         </View>
 
         <View style={styles.titleContainer}>
-          <ThemedText title style={styles.title}>{item.title}</ThemedText>
+          <ThemedText title style={styles.title}>
+            {item.title}
+          </ThemedText>
           {item.description && (
             <Ionicons
               name={expanded ? 'chevron-up-outline' : 'chevron-down-outline'}
@@ -213,12 +215,12 @@ export default function SectionItemRow({ item, mode, onEdit, onDelete }: Props) 
 }
 
 const styles = StyleSheet.create({
-  card: { width: '80%', alignSelf: 'center', borderWidth: 1, borderRadius: 14, overflow: 'hidden' },
+  card: { width: '94%', alignSelf: 'center', borderWidth: 1, borderRadius: 14, overflow: 'hidden' },
   pressed: { opacity: 0.8 },
   row: { minHeight: 62, padding: 9, flexDirection: 'row', alignItems: 'center', gap: 9 },
   typeIcon: { width: 40, height: 40, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   titleContainer: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 5 },
-  title: { flexShrink: 1, fontSize: 14, fontWeight: '800', lineHeight: 19 },
+  title: { flexShrink: 1, fontSize: 15, fontWeight: '800', lineHeight: 21 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 5, flexShrink: 0 },
   iconButton: { width: 32, height: 32, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   primaryAction: { minHeight: 34, minWidth: 70, paddingHorizontal: 9, borderRadius: 9, flexDirection: 'row', gap: 5, alignItems: 'center', justifyContent: 'center' },
