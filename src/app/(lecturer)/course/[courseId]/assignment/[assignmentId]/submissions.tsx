@@ -232,7 +232,7 @@ export default function LecturerAssignmentSubmissionsPage() {
     </ThemedView>
   )
 }
-git 
+
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: { minHeight: 68, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, borderBottomWidth: 1 },
