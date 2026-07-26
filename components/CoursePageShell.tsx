@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 
 import { useAppTheme } from '../src/store/themeStore'
@@ -43,7 +43,19 @@ export default function CoursePageShell({
 }: CoursePageShellProps) {
   const router = useRouter()
   const theme = useAppTheme()
+  const isGoingBack = useRef(false)
   const [activeSection, setActiveSection] = useState<CourseSection>('content')
+
+  const handleBack = () => {
+    if (isGoingBack.current || !router.canGoBack()) return
+
+    isGoingBack.current = true
+    router.back()
+
+    setTimeout(() => {
+      isGoingBack.current = false
+    }, 500)
+  }
 
   return (
     <ThemedView style={styles.container}>
@@ -60,7 +72,7 @@ export default function CoursePageShell({
           accessibilityRole='button'
           accessibilityLabel='Go back to dashboard'
           hitSlop={10}
-          onPress={() => router.back()}
+          onPress={handleBack}
           style={({ pressed }) => [
             styles.headerButton,
             {

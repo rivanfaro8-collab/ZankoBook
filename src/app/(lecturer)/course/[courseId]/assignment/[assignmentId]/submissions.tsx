@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as Linking from 'expo-linking'
 import { Stack, router, useLocalSearchParams } from 'expo-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -33,6 +33,7 @@ const isPastDeadline = (value: string) => {
 
 export default function LecturerAssignmentSubmissionsPage() {
   const theme = useAppTheme()
+  const isGoingBack = useRef(false)
   const queryClient = useQueryClient()
   const params = useLocalSearchParams<{
     courseId: string
@@ -131,11 +132,22 @@ export default function LecturerAssignmentSubmissionsPage() {
   const students = gradebookQuery.data?.students ?? []
   const maxFiles = Math.max(1, ...students.map((student) => filesByStudent.get(student.id)?.length ?? 0))
 
+  const handleBack = () => {
+    if (isGoingBack.current || !router.canGoBack()) return
+
+    isGoingBack.current = true
+    router.back()
+
+    setTimeout(() => {
+      isGoingBack.current = false
+    }, 500)
+  }
+
   return (
     <ThemedView safe style={styles.safe}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={[styles.header, { borderBottomColor: theme.border }]}> 
-        <Pressable onPress={() => router.back()} style={[styles.backButton, { backgroundColor: theme.uiBackground }]}> 
+        <Pressable onPress={handleBack} style={[styles.backButton, { backgroundColor: theme.uiBackground }]}> 
           <Ionicons name='arrow-back' size={23} color={theme.title} />
         </Pressable>
         <View style={styles.headerText}>

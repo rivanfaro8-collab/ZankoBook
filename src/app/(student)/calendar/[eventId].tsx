@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useQuery } from '@tanstack/react-query'
 import { Stack, router, useLocalSearchParams } from 'expo-router'
+import { useRef } from 'react'
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 
 import ThemedText from '../../../../components/ThemedText'
@@ -20,17 +21,29 @@ export default function AssignmentDetailsPage() {
   const theme = useAppTheme()
   const params = useLocalSearchParams<{ eventId: string }>()
   const eventId = Number(params.eventId)
+  const isGoingBack = useRef(false)
   const query = useQuery({
     queryKey: ['assignment-details', eventId],
     queryFn: () => getAssignmentDetails(eventId),
     enabled: Number.isFinite(eventId),
   })
 
+  const handleBack = () => {
+    if (isGoingBack.current || !router.canGoBack()) return
+
+    isGoingBack.current = true
+    router.back()
+
+    setTimeout(() => {
+      isGoingBack.current = false
+    }, 500)
+  }
+
   return (
     <ThemedView safe style={styles.safe}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
-        <Pressable onPress={() => router.back()} style={[styles.backButton, { backgroundColor: theme.uiBackground }]}>
+        <Pressable onPress={handleBack} style={[styles.backButton, { backgroundColor: theme.uiBackground }]}>
           <Ionicons name='arrow-back' size={23} color={theme.title} />
         </Pressable>
         <ThemedText title style={styles.headerTitle}>Assignment details</ThemedText>
