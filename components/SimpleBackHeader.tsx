@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
+import { useRef } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -11,12 +12,24 @@ type SimpleBackHeaderProps = {
 
 export default function SimpleBackHeader({ title }: SimpleBackHeaderProps) {
   const theme = useAppTheme()
+  const isGoingBack = useRef(false)
+
+  const handleBack = () => {
+    if (isGoingBack.current || !router.canGoBack()) return
+
+    isGoingBack.current = true
+    router.back()
+
+    setTimeout(() => {
+      isGoingBack.current = false
+    }, 500)
+  }
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}> 
       <View style={styles.row}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={handleBack}
           accessibilityRole='button'
           accessibilityLabel='Go back'
           hitSlop={8}
