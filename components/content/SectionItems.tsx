@@ -68,18 +68,29 @@ export default function SectionItems({ sectionId, mode }: Props) {
       file,
       submissionValues,
       submissionFiles,
+      attachmentsMarkedForDeletion,
     }: {
       category: SectionItemCategory
       values: SectionItemFormValues
       file: PickedSectionFile | null
       submissionValues?: SectionSubmissionFormValues
       submissionFiles?: PickedSectionFile[]
+      attachmentsMarkedForDeletion?: number[]
     }) => {
       if (category === 'submission') {
         if (!submissionValues) throw new Error('Assignment values are missing.')
-        return editingAssignment
-          ? updateSectionSubmission(editingAssignment.id, submissionValues, submissionFiles)
-          : createSectionSubmission(sectionId, submissionValues, submissionFiles)
+
+        if (editingAssignment) {
+          return Promise.all(
+            (attachmentsMarkedForDeletion ?? []).map((attachmentId) =>
+              deleteSectionSubmissionAttachment(attachmentId),
+            ),
+          ).then(() =>
+            updateSectionSubmission(editingAssignment.id, submissionValues, submissionFiles),
+          )
+        }
+
+        return createSectionSubmission(sectionId, submissionValues, submissionFiles)
       }
 
       return editingItem
@@ -238,16 +249,21 @@ export default function SectionItems({ sectionId, mode }: Props) {
         assignment={editingAssignment}
         initialCategory={editingAssignment ? 'submission' : 'file'}
         isSaving={saveMutation.isPending}
-        isDeletingAttachment={removeAttachmentMutation.isPending}
-        onDeleteAssignmentAttachment={confirmDeleteAttachment}
         onClose={() => {
           if (saveMutation.isPending) return
           setModalVisible(false)
           setEditingItem(null)
           setEditingAssignment(null)
         }}
-        onSubmit={(category, values, file, submissionValues, submissionFiles) =>
-          saveMutation.mutate({ category, values, file, submissionValues, submissionFiles })
+        onSubmit={(category, values, file, submissionValues, submissionFiles, attachmentsMarkedForDeletion) =>
+          saveMutation.mutate({
+            category,
+            values,
+            file,
+            submissionValues,
+            submissionFiles,
+            attachmentsMarkedForDeletion,
+          })
         }
       />
     </View>
