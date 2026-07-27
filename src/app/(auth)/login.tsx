@@ -81,13 +81,16 @@ export default function Login() {
         style={styles.keyboardView}
       >
         <ThemedLogo style={styles.logo} />
-
         <ThemedText title style={styles.title}>
           Welcome to ZankoBook
         </ThemedText>
-
+        <ThemedText style={styles.subtitle}>{'\n'}</ThemedText>
+        <ThemedText style={styles.subtitle}>{'\n'}</ThemedText>
+        <ThemedText title style={styles.title}>
+          Welcome to ZankoBook
+        </ThemedText>
         <ThemedText style={styles.subtitle}>
-          Sign in to continue your learning journey.
+          Sign in to continue your learning journey.{'\n'}
         </ThemedText>
 
         <ThemedTextInput

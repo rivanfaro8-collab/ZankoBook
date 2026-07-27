@@ -20,7 +20,7 @@ const themePalettes: Record<ThemeName, { light: AppTheme; dark: AppTheme; swatch
     light: {
       text: '#607777',
       title: '#183838',
-      background: '#FFFFFF',
+      background: '#EBEBEB',
       navBackground: '#008080',
       iconColor: '#ffffff',
       iconColorFocused: '#FFFFFF',
@@ -49,7 +49,7 @@ const themePalettes: Record<ThemeName, { light: AppTheme; dark: AppTheme; swatch
     light: {
       text: '#506055',
       title: '#183321',
-      background: '#FFFFFF',
+      background: '#EBEBEB',
       navBackground: '#16A34A',
       iconColor: '#FFFFFF',
       iconColorFocused: '#FFFFFF',
@@ -78,7 +78,7 @@ const themePalettes: Record<ThemeName, { light: AppTheme; dark: AppTheme; swatch
     light: {
       text: '#6F5B4B',
       title: '#3F2412',
-      background: '#FFFFFF',
+      background: '#EBEBEB',
       navBackground: '#EA580C',
       iconColor: '#FFFFFF',
       iconColorFocused: '#FFFFFF',
@@ -107,7 +107,7 @@ const themePalettes: Record<ThemeName, { light: AppTheme; dark: AppTheme; swatch
     light: {
       text: '#685260',
       title: '#3A1730',
-      background: '#FFFFFF',
+      background: '#EBEBEB',
       navBackground: '#DB2777',
       iconColor: '#FFFFFF',
       iconColorFocused: '#FFFFFF',
@@ -136,7 +136,7 @@ const themePalettes: Record<ThemeName, { light: AppTheme; dark: AppTheme; swatch
     light: {
       text: '#5B6472',
       title: '#111827',
-      background: '#FFFFFF',
+      background: '#EBEBEB',
       navBackground: '#111827',
       iconColor: '#FFFFFF',
       iconColorFocused: '#FFFFFF',
@@ -165,7 +165,7 @@ const themePalettes: Record<ThemeName, { light: AppTheme; dark: AppTheme; swatch
     light: {
       text: '#536173',
       title: '#182B44',
-      background: '#FFFFFF',
+      background: '#EBEBEB',
       navBackground: '#3B6EA8',
       iconColor: '#FFFFFF',
       iconColorFocused: '#FFFFFF',
