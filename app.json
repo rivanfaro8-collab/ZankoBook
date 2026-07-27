@@ -4,21 +4,16 @@
     "slug": "ZankoBook",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/outsideLogo/teal.png",
     "scheme": "zankobook",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/outsideLogo/teal.png"
     },
     "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
-      },
       "predictiveBackGestureEnabled": false,
-      "package": "com.rivaniraqsteam.ZankoBook"
+      "package": "com.rivaniraqsteam.ZankoBook",
+      "icon": "./assets/outsideLogo/teal.png"
     },
     "web": {
       "output": "static",
@@ -29,9 +24,10 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#000000",
+          "image": "./assets/transparent.png",
+          "imageWidth": 1,
+          "resizeMode": "contain"
         }
       ],
       "expo-secure-store",
@@ -43,6 +39,41 @@
           "enforceContrast": false,
           "hidden": true,
           "style": "light"
+        }
+      ],
+      [
+        "@howincodes/expo-dynamic-app-icon",
+        {
+          "teal": {
+            "ios": "./assets/outsideLogo/teal.png",
+            "android": "./assets/outsideLogo/teal.png",
+            "prerendered": true
+          },
+          "green": {
+            "ios": "./assets/outsideLogo/green.png",
+            "android": "./assets/outsideLogo/green.png",
+            "prerendered": true
+          },
+          "orange": {
+            "ios": "./assets/outsideLogo/orange.png",
+            "android": "./assets/outsideLogo/orange.png",
+            "prerendered": true
+          },
+          "pink": {
+            "ios": "./assets/outsideLogo/pink.png",
+            "android": "./assets/outsideLogo/pink.png",
+            "prerendered": true
+          },
+          "midnight": {
+            "ios": "./assets/outsideLogo/midnight.png",
+            "android": "./assets/outsideLogo/midnight.png",
+            "prerendered": true
+          },
+          "blue": {
+            "ios": "./assets/outsideLogo/blue.png",
+            "android": "./assets/outsideLogo/blue.png",
+            "prerendered": true
+          }
         }
       ]
     ],
