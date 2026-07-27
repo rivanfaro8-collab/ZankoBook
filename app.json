@@ -36,7 +36,15 @@
       ],
       "expo-secure-store",
       "expo-localization",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false,
+          "hidden": true,
+          "style": "light"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
