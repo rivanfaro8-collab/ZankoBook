@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 import { Colors, type AppTheme, type ThemeName } from '../../constants/Colors'
+import { syncAppIcon } from '../lib/appIcon'
 
 export type ThemeMode = 'light' | 'dark'
 
@@ -22,7 +23,10 @@ export const useThemeStore = create<ThemeStore>((set) => ({
     })),
 
   setThemeMode: (themeMode) => set({ themeMode }),
-  setThemeName: (themeName) => set({ themeName }),
+  setThemeName: (themeName) => {
+    set({ themeName })
+    syncAppIcon(themeName)
+  },
 }))
 
 export const getAppTheme = (themeName: ThemeName, themeMode: ThemeMode): AppTheme =>
