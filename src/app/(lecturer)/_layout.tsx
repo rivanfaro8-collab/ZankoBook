@@ -63,19 +63,6 @@ function LecturerTabs({ onMenuPress }: LecturerTabsProps) {
         }}
       />
       <Tabs.Screen
-        name='Notifications'
-        options={{
-          title: 'Notifications',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'notifications' : 'notifications-outline'}
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name='Profile'
         options={{
           title: 'Profile',
