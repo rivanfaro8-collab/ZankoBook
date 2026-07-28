@@ -46,6 +46,17 @@ export default function CoursePageShell({
   const isGoingBack = useRef(false)
   const [activeSection, setActiveSection] = useState<CourseSection>('content')
 
+  const handleInfo = () => {
+    const pathname = attendanceMode === 'lecturer'
+      ? '/(lecturer)/course/[courseId]/students'
+      : '/(student)/course/[courseId]/teachers'
+
+    router.push({
+      pathname,
+      params: { courseId: String(courseId), courseName },
+    } as never)
+  }
+
   const handleBack = () => {
     if (isGoingBack.current || !router.canGoBack()) return
 
@@ -103,7 +114,7 @@ export default function CoursePageShell({
           accessibilityRole='button'
           accessibilityLabel='Course information'
           hitSlop={10}
-          onPress={() => undefined}
+          onPress={handleInfo}
           style={({ pressed }) => [
             styles.infoButton,
             { opacity: pressed ? 0.65 : 1 },

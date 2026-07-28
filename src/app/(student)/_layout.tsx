@@ -113,6 +113,14 @@ function StudentTabs({ onMenuPress }: StudentTabsProps) {
         }}
       />
       <Tabs.Screen
+        name='course/[courseId]/teachers'
+        options={{
+          href: null,
+          headerShown: false,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
         name='guide'
         options={{
           href: null,
