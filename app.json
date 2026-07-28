@@ -40,41 +40,6 @@
           "hidden": true,
           "style": "light"
         }
-      ],
-      [
-        "@howincodes/expo-dynamic-app-icon",
-        {
-          "teal": {
-            "ios": "./assets/outsideLogo/teal.png",
-            "android": "./assets/outsideLogo/teal.png",
-            "prerendered": true
-          },
-          "green": {
-            "ios": "./assets/outsideLogo/green.png",
-            "android": "./assets/outsideLogo/green.png",
-            "prerendered": true
-          },
-          "orange": {
-            "ios": "./assets/outsideLogo/orange.png",
-            "android": "./assets/outsideLogo/orange.png",
-            "prerendered": true
-          },
-          "pink": {
-            "ios": "./assets/outsideLogo/pink.png",
-            "android": "./assets/outsideLogo/pink.png",
-            "prerendered": true
-          },
-          "midnight": {
-            "ios": "./assets/outsideLogo/midnight.png",
-            "android": "./assets/outsideLogo/midnight.png",
-            "prerendered": true
-          },
-          "blue": {
-            "ios": "./assets/outsideLogo/blue.png",
-            "android": "./assets/outsideLogo/blue.png",
-            "prerendered": true
-          }
-        }
       ]
     ],
     "experiments": {

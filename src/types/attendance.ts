@@ -18,6 +18,11 @@ export type AttendanceWeek = {
 export type CourseStudent = {
   id: number
   user_id?: number
+  student_number?: string
+  stage?: string | number
+  enrollment_type?: string
+  status?: string
+  created_at?: string | null
   user: {
     id?: number
     name: string

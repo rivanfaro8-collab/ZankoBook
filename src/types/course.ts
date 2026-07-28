@@ -13,6 +13,7 @@ export type CourseDepartment = {
 export type CourseTeacherUser = {
   id: number
   name: string
+  email?: string | null
 }
 
 export type CourseTeacher = {

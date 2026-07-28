@@ -1,5 +1,5 @@
 import api from '@/lib/axios'
-import type { Course, CoursesApiResponse } from '@/types/course'
+import type { Course, CourseTeacher, CoursesApiResponse } from '@/types/course'
 
 const ensureCoursesArray = (
   response: CoursesApiResponse,
@@ -38,4 +38,23 @@ export async function getLecturerCourses(): Promise<Course[]> {
     response.data,
     'Could not retrieve lecturer courses.',
   )
+}
+
+export async function getCourseLecturers(
+  courseId: string | number,
+): Promise<CourseTeacher[]> {
+  const response = await api.get<{
+    success: boolean
+    message: string
+    data: CourseTeacher[]
+  }>(`/api/moodle/courses/${courseId}/teachers`)
+
+  const { success, message, data } = response.data
+
+  if (!success) throw new Error(message)
+  if (!Array.isArray(data)) {
+    throw new Error('The server returned an invalid teachers response.')
+  }
+
+  return data
 }
