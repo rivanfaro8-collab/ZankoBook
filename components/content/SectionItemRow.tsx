@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons'
 import * as FileSystem from 'expo-file-system/legacy'
 import * as Linking from 'expo-linking'
-import * as Sharing from 'expo-sharing'
 import { useEffect, useMemo, useState } from 'react'
 import { Alert, Pressable, StyleSheet, View } from 'react-native'
 
-import { saveDownloadedFile } from '@/lib/downloadHistory'
+import { removeDownloadedFile, saveDownloadedFile } from '@/lib/downloadHistory'
+import { getFileMimeType, isErrorDocumentMimeType, openLocalFile, resolveDownloadUrl } from '@/lib/fileActions'
 import { useAppTheme } from '@/store/themeStore'
+import { useUserStore } from '@/store/userStore'
 import type { CourseSectionItem } from '@/types/course'
 import ThemedText from '../ThemedText'
 import { getItemCategory } from './SectionItemModal'
@@ -25,6 +26,7 @@ const safeFileName = (item: CourseSectionItem) => {
 
 export default function SectionItemRow({ item, mode, onEdit, onDelete }: Props) {
   const theme = useAppTheme()
+  const token = useUserStore((state) => state.token)
   const category = getItemCategory(item)
   const [expanded, setExpanded] = useState(false)
   const [localUri, setLocalUri] = useState<string | null>(null)
@@ -37,15 +39,26 @@ export default function SectionItemRow({ item, mode, onEdit, onDelete }: Props) 
 
   useEffect(() => {
     if (category !== 'file') return
-    FileSystem.getInfoAsync(destination).then((info) => {
+    FileSystem.getInfoAsync(destination).then(async (info) => {
       if (!info.exists) return
+
+      const size = 'size' in info ? info.size : 0
+      if (!size || size <= 0) {
+        await FileSystem.deleteAsync(info.uri, { idempotent: true })
+        await removeDownloadedFile(`section-item-${item.id}`)
+        setLocalUri(null)
+        return
+      }
+
+      const fileName = item.material_file_name || safeFileName(item)
+
       setLocalUri(info.uri)
       void saveDownloadedFile({
         id: `section-item-${item.id}`,
         title: item.title,
-        fileName: item.material_file_name || safeFileName(item),
+        fileName,
         localUri: info.uri,
-        mimeType: item.material_file_type || undefined,
+        mimeType: getFileMimeType(fileName, item.material_file_type),
         downloadedAt: info.modificationTime
           ? new Date(info.modificationTime * 1000).toISOString()
           : new Date().toISOString(),
@@ -56,20 +69,25 @@ export default function SectionItemRow({ item, mode, onEdit, onDelete }: Props) 
   const openFile = async () => {
     if (!localUri) return
     const info = await FileSystem.getInfoAsync(localUri)
-    if (!info.exists) {
+    const size = info.exists && 'size' in info ? info.size : 0
+    if (!info.exists || !size || size <= 0) {
+      if (info.exists) {
+        await FileSystem.deleteAsync(localUri, { idempotent: true })
+      }
+      await removeDownloadedFile(`section-item-${item.id}`)
       setLocalUri(null)
-      Alert.alert('File unavailable', 'This downloaded file no longer exists on the device.')
+      Alert.alert('File unavailable', 'This downloaded file is empty or no longer exists. Please download it again.')
       return
     }
-    const available = await Sharing.isAvailableAsync()
-    if (!available) {
-      Alert.alert('Unable to open file', 'No compatible application is available on this device.')
-      return
+    try {
+      await openLocalFile(
+        localUri,
+        item.material_file_name || safeFileName(item),
+        item.material_file_type,
+      )
+    } catch {
+      Alert.alert('Unable to open file', 'No compatible application is available for this file type.')
     }
-    await Sharing.shareAsync(localUri, {
-      mimeType: item.material_file_type || undefined,
-      dialogTitle: `Open ${item.material_file_name || 'file'}`,
-    })
   }
 
   const download = async () => {
@@ -83,11 +101,20 @@ export default function SectionItemRow({ item, mode, onEdit, onDelete }: Props) 
         intermediates: true,
       })
 
+      const existingFile = await FileSystem.getInfoAsync(destination)
+      if (existingFile.exists) {
+        await FileSystem.deleteAsync(destination, { idempotent: true })
+      }
+      await removeDownloadedFile(`section-item-${item.id}`)
+      setLocalUri(null)
+
       setProgress(0)
       const resumable = FileSystem.createDownloadResumable(
-        item.material_file_url,
+        resolveDownloadUrl(item.material_file_url),
         destination,
-        {},
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        },
         ({ totalBytesWritten, totalBytesExpectedToWrite }) => {
           const ratio = totalBytesExpectedToWrite > 0
             ? totalBytesWritten / totalBytesExpectedToWrite
@@ -98,13 +125,39 @@ export default function SectionItemRow({ item, mode, onEdit, onDelete }: Props) 
 
       const result = await resumable.downloadAsync()
       if (!result?.uri) throw new Error('The download did not return a local file.')
+
+      if (result.status < 200 || result.status >= 300) {
+        await FileSystem.deleteAsync(result.uri, { idempotent: true })
+        throw new Error(`The server could not download this file (${result.status}).`)
+      }
+
+      const responseMimeType = result.headers?.['content-type']
+        ?? result.headers?.['Content-Type']
+      if (isErrorDocumentMimeType(responseMimeType)) {
+        await FileSystem.deleteAsync(result.uri, { idempotent: true })
+        throw new Error('The server returned an error instead of the requested file.')
+      }
+
+      const downloadedInfo = await FileSystem.getInfoAsync(result.uri)
+      const downloadedSize = downloadedInfo.exists && 'size' in downloadedInfo
+        ? downloadedInfo.size
+        : 0
+
+      if (!downloadedInfo.exists || !downloadedSize || downloadedSize <= 0) {
+        await FileSystem.deleteAsync(result.uri, { idempotent: true })
+        throw new Error('The server returned an empty file. Please try again or contact support.')
+      }
+
+      const fileName = item.material_file_name || safeFileName(item)
+      const mimeType = getFileMimeType(fileName, responseMimeType || item.material_file_type)
+
       setLocalUri(result.uri)
       await saveDownloadedFile({
         id: `section-item-${item.id}`,
         title: item.title,
-        fileName: item.material_file_name || safeFileName(item),
+        fileName,
         localUri: result.uri,
-        mimeType: item.material_file_type || undefined,
+        mimeType,
         downloadedAt: new Date().toISOString(),
       })
       setProgress(null)

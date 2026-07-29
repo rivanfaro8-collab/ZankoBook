@@ -1,13 +1,11 @@
 import { Ionicons } from '@expo/vector-icons'
 import * as FileSystem from 'expo-file-system/legacy'
-import * as Linking from 'expo-linking'
 import { useFocusEffect } from 'expo-router'
 import * as Sharing from 'expo-sharing'
 import { useCallback, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,6 +13,7 @@ import {
 } from 'react-native'
 
 import { getDownloadedFiles, removeDownloadedFile, type DownloadedFile } from '@/lib/downloadHistory'
+import { getFileMimeType, openLocalFile } from '@/lib/fileActions'
 import { useAppTheme } from '@/store/themeStore'
 import SimpleBackHeader from '../SimpleBackHeader'
 import ThemedText from '../ThemedText'
@@ -43,24 +42,18 @@ export default function DownloadedFilesScreen() {
   const openFile = async (file: DownloadedFile) => {
     try {
       const info = await FileSystem.getInfoAsync(file.localUri)
-      if (!info.exists) {
+      const size = info.exists && 'size' in info ? info.size : 0
+      if (!info.exists || !size || size <= 0) {
+        if (info.exists) {
+          await FileSystem.deleteAsync(file.localUri, { idempotent: true })
+        }
         await removeDownloadedFile(file.id)
         setFiles((current) => current.filter((item) => item.id !== file.id))
-        Alert.alert('File unavailable', 'This downloaded file no longer exists on the device.')
+        Alert.alert('File unavailable', 'This downloaded file is empty or corrupted. Please download it again.')
         return
       }
 
-      const uri = Platform.OS === 'android'
-        ? await FileSystem.getContentUriAsync(file.localUri)
-        : file.localUri
-      const supported = await Linking.canOpenURL(uri)
-
-      if (!supported) {
-        Alert.alert('Unable to open file', 'No compatible application is available on this device.')
-        return
-      }
-
-      await Linking.openURL(uri)
+      await openLocalFile(file.localUri, file.fileName, file.mimeType)
     } catch (error) {
       Alert.alert('Unable to open file', error instanceof Error ? error.message : 'Could not open this file.')
     }
@@ -68,6 +61,18 @@ export default function DownloadedFilesScreen() {
 
   const shareFile = async (file: DownloadedFile) => {
     try {
+      const info = await FileSystem.getInfoAsync(file.localUri)
+      const size = info.exists && 'size' in info ? info.size : 0
+      if (!info.exists || !size || size <= 0) {
+        if (info.exists) {
+          await FileSystem.deleteAsync(file.localUri, { idempotent: true })
+        }
+        await removeDownloadedFile(file.id)
+        setFiles((current) => current.filter((item) => item.id !== file.id))
+        Alert.alert('File unavailable', 'This downloaded file is empty or corrupted. Please download it again.')
+        return
+      }
+
       const available = await Sharing.isAvailableAsync()
       if (!available) {
         Alert.alert('Sharing unavailable', 'File sharing is not available on this device.')
@@ -75,7 +80,7 @@ export default function DownloadedFilesScreen() {
       }
 
       await Sharing.shareAsync(file.localUri, {
-        mimeType: file.mimeType,
+        mimeType: getFileMimeType(file.fileName, file.mimeType),
         dialogTitle: `Share ${file.fileName}`,
       })
     } catch (error) {
