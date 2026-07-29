@@ -35,7 +35,7 @@ export default function Login() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isPasswordHidden, setIsPasswordHidden] = useState(false)
+  const [isPasswordHidden, setIsPasswordHidden] = useState(true)
 
   const loginMutation = useMutation({
     mutationFn: login,
@@ -63,7 +63,10 @@ export default function Login() {
         return
       }
 
-      Alert.alert('Login failed', 'This account does not have a supported ZankoBook role.')
+      Alert.alert(
+        'Login failed',
+        'This account does not have a supported ZankoBook role.',
+      )
     },
 
     onError: (error) => {
