@@ -1,6 +1,9 @@
+import { useMutation } from '@tanstack/react-query'
 import { Link } from 'expo-router'
 import { useState } from 'react'
-import { Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
+import { Alert, StyleSheet, View } from 'react-native'
+
+import { forgotPassword } from '@/api/auth'
 
 import ThemedButton from '../../../components/ThemedButton'
 import ThemedLogo from '../../../components/ThemedLogo'
@@ -11,27 +14,51 @@ import ThemedView from '../../../components/ThemedView'
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
 
+  const resetMutation = useMutation({
+    mutationFn: forgotPassword,
+    onSuccess: (message) => {
+      Alert.alert('Request sent', message)
+    },
+    onError: (error) => {
+      Alert.alert(
+        'Unable to reset password',
+        error instanceof Error
+          ? error.message
+          : 'Unable to send the password reset request. Please try again.',
+      )
+    },
+  })
+
   const handleResetPassword = () => {
-    if (!email.trim()) {
+    const cleanEmail = email.trim()
+
+    if (!cleanEmail) {
       Alert.alert('Email required', 'Please enter your email address.')
       return
     }
 
-    // Password reset requests will be sent to the backend here later.
-    console.log('Password reset requested', { email: email.trim() })
+    if (resetMutation.isPending) {
+      return
+    }
+
+    resetMutation.mutate(cleanEmail)
   }
 
   return (
     <ThemedView style={styles.screen}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardView}
-      >
+      <View style={styles.logoBlock} pointerEvents='none'>
         <ThemedLogo style={styles.logo} />
+      </View>
 
+      <View style={styles.formBlock}>
         <ThemedText title style={styles.title}>
+          {'\n'}
+          {'\n'}
+          {'\n'}
+          {'\n'}
           Reset your password
         </ThemedText>
+
         <ThemedText style={styles.subtitle}>
           Enter your email address and we will send you a password reset link.
         </ThemedText>
@@ -54,15 +81,18 @@ export default function ForgotPassword() {
           onPress={handleResetPassword}
           accessibilityRole='button'
           accessibilityLabel='Reset password'
+          disabled={resetMutation.isPending}
           style={styles.resetButton}
         >
-          <ThemedText style={styles.buttonText}>Reset Password</ThemedText>
+          <ThemedText style={styles.buttonText}>
+            {resetMutation.isPending ? 'Sending...' : 'Reset Password'}
+          </ThemedText>
         </ThemedButton>
 
         <Link href='/login' replace style={styles.backLink}>
           <ThemedText style={styles.backText}>Back to Login</ThemedText>
         </Link>
-      </KeyboardAvoidingView>
+      </View>
     </ThemedView>
   )
 }
@@ -71,17 +101,22 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  keyboardView: {
-    flex: 1,
+  logoBlock: {
+    height: 205,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
+    justifyContent: 'flex-end',
+    paddingBottom: 16,
   },
   logo: {
     width: 112,
     height: 124,
     resizeMode: 'contain',
-    marginBottom: 22,
+  },
+  formBlock: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 4,
   },
   title: {
     fontSize: 25,
