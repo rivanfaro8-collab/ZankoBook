@@ -41,10 +41,11 @@ const AssessmentCard = ({ assessment }: { assessment: StudentCourseAssessment })
   const theme = useAppTheme()
   const [expanded, setExpanded] = useState(false)
 
-  const mark = toNumber(assessment.mark)
+  const isGraded = assessment.mark !== null && assessment.mark !== undefined && assessment.mark !== ''
+  const mark = isGraded ? toNumber(assessment.mark) : null
   const maxMark = toNumber(assessment.max_mark)
   const weight = toNumber(assessment.weight)
-  const percentage = maxMark === 0 ? 0 : Math.min(100, Math.max(0, (mark / maxMark) * 100))
+  const percentage = !isGraded || maxMark === 0 ? 0 : Math.min(100, Math.max(0, ((mark as number) / maxMark) * 100))
   const hasFeedback = Boolean(assessment.feedback?.trim())
 
   return (
@@ -96,8 +97,14 @@ const AssessmentCard = ({ assessment }: { assessment: StudentCourseAssessment })
         </View>
 
         <View style={styles.gradeArea}>
-          <ThemedText title style={styles.gradeValue}>{formatNumber(mark)}</ThemedText>
-          <ThemedText style={styles.maxGrade}>/ {formatNumber(maxMark)}</ThemedText>
+          {isGraded ? (
+            <>
+              <ThemedText title style={styles.gradeValue}>{formatNumber(mark as number)}</ThemedText>
+              <ThemedText style={styles.maxGrade}>/ {formatNumber(maxMark)}</ThemedText>
+            </>
+          ) : (
+            <ThemedText title style={styles.gradeValue}>Not graded</ThemedText>
+          )}
         </View>
       </View>
 
@@ -169,7 +176,8 @@ export default function StudentGradesSection({ courseId, courseName }: Props) {
     )
 
     const earnedWeight = gradedAssessments.reduce((sum, assessment) => {
-      const mark = toNumber(assessment.mark)
+      const isGraded = assessment.mark !== null && assessment.mark !== undefined && assessment.mark !== ''
+  const mark = isGraded ? toNumber(assessment.mark) : null
       const maxMark = toNumber(assessment.max_mark)
       const weight = toNumber(assessment.weight)
 

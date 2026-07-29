@@ -57,6 +57,7 @@ export default function EditAssessmentsModal({
         max_mark: numeric(assessment.max_mark),
         weight: numeric(assessment.weight),
         type: assessment.type ?? 'activity',
+        is_published: Boolean(assessment.is_published),
         state: 'clean',
       })),
     )
@@ -129,6 +130,7 @@ export default function EditAssessmentsModal({
         max_mark: 100,
         weight: 0,
         type: 'activity',
+        is_published: false,
         state: 'new',
       },
     ])
@@ -179,6 +181,7 @@ export default function EditAssessmentsModal({
           title: item.title.trim(),
           max_mark: item.max_mark,
           weight: item.weight,
+          is_published: false,
         })),
       update: items
         .filter((item) => item.state === 'edited')
@@ -187,6 +190,7 @@ export default function EditAssessmentsModal({
           title: item.title.trim(),
           max_mark: item.max_mark,
           weight: item.weight,
+          is_published: item.is_published,
         })),
       delete: items
         .filter((item) => item.state === 'deleted')

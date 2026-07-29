@@ -18,6 +18,7 @@ export type GradebookAssessment = {
   type: AssessmentType
   max_mark: number | string
   weight: number | string
+  is_published: boolean | number
 }
 
 export type GradebookStudentMark = {
@@ -48,6 +49,7 @@ export type AssessmentUIState = {
   max_mark: number
   weight: number
   type: AssessmentType
+  is_published: boolean
   state: AssessmentEditState
 }
 
@@ -55,6 +57,7 @@ export type CreateAssessmentPayload = {
   title: string
   weight: number
   max_mark: number
+  is_published: boolean
 }
 
 export type UpdateAssessmentPayload = {
@@ -62,6 +65,7 @@ export type UpdateAssessmentPayload = {
   title?: string
   weight?: number
   max_mark?: number
+  is_published: boolean
 }
 
 export type ModifyAssessmentsPayload = {
