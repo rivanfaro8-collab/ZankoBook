@@ -7,20 +7,20 @@ export type LoginPayload = {
 
 export type ApiRole = {
   id: number
-  name: string
+  name: UserRole
 }
 
 export type UserScope = {
   id: number
-  role?: ApiRole
-  scope_type: string
-  scope_id: number
-  scope: {
+  role: ApiRole
+  scope_type: 'UNIVERSITY' | 'FACULTY' | 'DEPARTMENT'
+  scope_id: number | null
+  scope?: {
     id: number
     name: string
+    is_open?: boolean
     course_selection_starts_at?: string
     course_selection_ends_at?: string
-    is_open?: boolean
     faculty?: {
       id: number
       name: string
@@ -29,7 +29,7 @@ export type UserScope = {
         name: string
       }
     }
-  }
+  } | null
 }
 
 export type User = {
@@ -39,15 +39,10 @@ export type User = {
   phone: string
   is_active: number
   is_two_factor_enabled: number
-  role: UserRole
+  roles: ApiRole[]
   scopes: UserScope[]
   created_at?: string
   updated_at?: string
-}
-
-
-type LoginApiUser = Omit<User, 'role'> & {
-  roles: ApiRole[]
 }
 
 export type LoginResponse = {
@@ -55,8 +50,14 @@ export type LoginResponse = {
   message: string
   data: {
     token: string
-    user: LoginApiUser
+    user: User
   }
+}
+
+export type GetProfileResponse = {
+  success: boolean
+  message: string
+  data: User
 }
 
 export type LoginResult = {

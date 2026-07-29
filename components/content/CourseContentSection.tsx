@@ -19,6 +19,7 @@ import {
 } from '@/api/courseSections'
 import type { CourseSection } from '@/types/course'
 import { useAppTheme } from '@/store/themeStore'
+import { useUserStore } from '@/store/userStore'
 import ThemedText from '../ThemedText'
 import ThemedTextInput from '../ThemedTextInput'
 import SectionItems from './SectionItems'
@@ -26,6 +27,7 @@ import SectionItems from './SectionItems'
 type Props = {
   courseId: number
   mode: 'lecturer' | 'student'
+  teacherRole?: string
 }
 
 type SectionModalState =
@@ -33,9 +35,11 @@ type SectionModalState =
   | { type: 'edit'; section: CourseSection }
   | null
 
-export default function CourseContentSection({ courseId, mode }: Props) {
+export default function CourseContentSection({ courseId, mode, teacherRole }: Props) {
   const theme = useAppTheme()
   const queryClient = useQueryClient()
+  const user = useUserStore((state) => state.user)
+  const isPrimaryLecturer = teacherRole === 'primary_lecturer'
   const [expandedIds, setExpandedIds] = useState<number[]>([])
   const [modal, setModal] = useState<SectionModalState>(null)
   const [title, setTitle] = useState('')
@@ -170,6 +174,9 @@ export default function CourseContentSection({ courseId, mode }: Props) {
           const expanded = expandedIds.includes(item.id)
           const itemCount = item.items?.length ?? 0
           const submissionCount = item.submissions?.length ?? 0
+          const canModifySection =
+            mode === 'lecturer' &&
+            (isPrimaryLecturer || item.created_by?.user?.id === user?.id)
 
           return (
             <View
@@ -195,7 +202,7 @@ export default function CourseContentSection({ courseId, mode }: Props) {
                   </ThemedText>
                 </View>
 
-                {mode === 'lecturer' && (
+                {canModifySection && (
                   <View style={styles.actions}>
                     <Pressable
                       hitSlop={8}
@@ -230,7 +237,11 @@ export default function CourseContentSection({ courseId, mode }: Props) {
 
               {expanded && (
                 <View style={[styles.expandedArea, { borderTopColor: theme.border }]}>
-                  <SectionItems sectionId={item.id} mode={mode} />
+                  <SectionItems
+                    sectionId={item.id}
+                    mode={mode}
+                    isPrimaryLecturer={isPrimaryLecturer}
+                  />
                 </View>
               )}
             </View>

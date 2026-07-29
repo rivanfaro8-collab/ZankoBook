@@ -10,6 +10,14 @@ import ThemedText from '../ThemedText'
 import ThemedView from '../ThemedView'
 
 const avatarColors = ['#F97316', '#008080', '#3B82F6', '#EC4899']
+
+const formatTeacherRole = (teacher: CourseTeacher) => {
+  const role = teacher.pivot?.role ?? teacher.role
+  if (role === 'primary_lecturer') return 'Primary lecturer'
+  if (role === 'assistant_lecturer') return 'Assistant lecturer'
+  if (role === 'lab_instructor') return 'Lab instructor'
+  return null
+}
 type Props = { courseId: number; courseName: string }
 
 export default function CourseTeachersScreen({ courseId, courseName }: Props) {
@@ -41,11 +49,19 @@ export default function CourseTeachersScreen({ courseId, courseName }: Props) {
 
 function TeacherCard({ teacher, color }: { teacher: CourseTeacher; color: string }) {
   const theme = useAppTheme()
+  const roleLabel = formatTeacherRole(teacher)
   return (
     <View style={[styles.card, { backgroundColor: theme.uiBackground, borderColor: theme.border }]}>
       <View style={[styles.avatar, { backgroundColor: color }]}><ThemedText style={styles.avatarText}>{teacher.user.name.slice(0, 2).toUpperCase()}</ThemedText></View>
       <View style={styles.info}>
-        <ThemedText title style={styles.name} numberOfLines={1}>{teacher.user.name}</ThemedText>
+        <View style={styles.nameRow}>
+          <ThemedText title style={styles.name} numberOfLines={1}>{teacher.user.name}</ThemedText>
+          {roleLabel ? (
+            <View style={[styles.roleBadge, { borderColor: theme.primary }]}>
+              <ThemedText title style={[styles.roleText, { color: theme.primary }]}>{roleLabel}</ThemedText>
+            </View>
+          ) : null}
+        </View>
         <View style={styles.emailRow}><Ionicons name='mail-outline' size={15} color={theme.text} /><ThemedText style={styles.email} numberOfLines={1}>{teacher.user.email ?? 'No email'}</ThemedText></View>
         {teacher.title || teacher.speciality ? <ThemedText style={styles.meta} numberOfLines={1}>{[teacher.title, teacher.speciality].filter(Boolean).join(' · ')}</ThemedText> : null}
       </View>
@@ -67,6 +83,6 @@ function State({ icon, title, message, onRetry }: { icon: keyof typeof Ionicons.
 
 const styles = StyleSheet.create({
   screen: { flex: 1 }, heading: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 18 }, title: { fontSize: 27, fontWeight: '800' }, subtitle: { marginTop: 4, fontSize: 14 }, list: { paddingHorizontal: 20, paddingBottom: 32 }, emptyList: { flexGrow: 1 }, separator: { height: 13 },
-  card: { minHeight: 92, borderRadius: 16, borderWidth: 1, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }, avatar: { width: 54, height: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center' }, avatarText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' }, info: { flex: 1, minWidth: 0 }, name: { fontSize: 17, fontWeight: '800' }, emailRow: { marginTop: 7, flexDirection: 'row', alignItems: 'center', gap: 6 }, email: { flex: 1, fontSize: 13 }, meta: { marginTop: 6, fontSize: 12 },
+  card: { minHeight: 92, borderRadius: 16, borderWidth: 1, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }, avatar: { width: 54, height: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center' }, avatarText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' }, info: { flex: 1, minWidth: 0 }, nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 }, name: { flex: 1, fontSize: 17, fontWeight: '800' }, roleBadge: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 3 }, roleText: { fontSize: 10, fontWeight: '800' }, emailRow: { marginTop: 7, flexDirection: 'row', alignItems: 'center', gap: 6 }, email: { flex: 1, fontSize: 13 }, meta: { marginTop: 6, fontSize: 12 },
   state: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30, paddingBottom: 70 }, stateIcon: { width: 68, height: 68, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }, stateTitle: { fontSize: 18, fontWeight: '800', textAlign: 'center' }, stateMessage: { marginTop: 7, fontSize: 13, lineHeight: 19, textAlign: 'center' }, retry: { marginTop: 18, minHeight: 44, borderWidth: 1, borderRadius: 13, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 7 }, retryText: { fontSize: 14, fontWeight: '800' }, pressed: { opacity: 0.65 },
 })

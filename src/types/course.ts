@@ -16,10 +16,21 @@ export type CourseTeacherUser = {
   email?: string | null
 }
 
+export type TeacherRole =
+  | 'primary_lecturer'
+  | 'assistant_lecturer'
+  | 'lab_instructor'
+
 export type CourseTeacher = {
   id: number
   title: string | null
   speciality: string | null
+  role?: TeacherRole
+  pivot?: {
+    course_id: number
+    teacher_id: number
+    role: TeacherRole
+  }
   user: CourseTeacherUser
   created_at: string | null
   updated_at: string | null
@@ -36,6 +47,7 @@ export type Course = {
   semester: string | null
   students_count: number
   sections_count: number
+  role?: TeacherRole | null
   department: CourseDepartment
 
   /*
@@ -65,6 +77,12 @@ export type CourseSectionItem = {
   material_file_url: string | null
   created_at: string
   updated_at: string
+  created_by_teacher_id?: number
+  created_by?: {
+    id: number
+    name: string
+    user_id: number
+  }
 }
 
 export type SectionItemCategory = 'file' | 'link' | 'note' | 'submission'
@@ -107,6 +125,11 @@ export type SectionSubmission = {
     title: string
   }
   attachments: SectionSubmissionAttachment[]
+  created_by?: {
+    id: number
+    name: string
+    user_id: number
+  }
   created_at: string
   updated_at: string
 }
@@ -135,6 +158,16 @@ export type CourseSection = {
   course?: Course
   items?: CourseSectionItem[]
   submissions?: CourseSubmission[]
+  created_by?: {
+    id: number
+    title?: string | null
+    speciality?: string | null
+    user?: {
+      id: number
+      name: string
+      email?: string | null
+    }
+  }
   created_at?: string
   updated_at?: string
 }

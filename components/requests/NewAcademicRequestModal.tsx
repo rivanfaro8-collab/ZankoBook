@@ -137,7 +137,7 @@ export default function NewAcademicRequestModal({ visible, onClose }: Props) {
       return
     }
 
-    const departmentId = user?.role === 'lecturer'
+    const departmentId = user?.roles?.[0]?.name === 'lecturer'
       ? user.scopes?.[0]?.scope_id
       : undefined
 

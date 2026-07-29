@@ -1,60 +1,56 @@
 import api from '@/lib/axios'
-import type { Course, CourseTeacher, CoursesApiResponse } from '@/types/course'
+import type { Course, CourseTeacher } from '@/types/course'
 
-const ensureCoursesArray = (
-  response: CoursesApiResponse,
-  fallbackMessage: string,
-): Course[] => {
-  if (!response.success) {
-    throw new Error(response.message || fallbackMessage)
-  }
-
-  /*
-   * React Query does not allow query functions to return undefined.
-   * Both new endpoints return the courses array directly inside `data`.
-   */
-  if (!Array.isArray(response.data)) {
-    throw new Error('The server returned an invalid courses response.')
-  }
-
-  return response.data
+type ApiResponse<T> = {
+  success: boolean
+  message: string
+  data: T
 }
 
 export async function getStudentCourses(): Promise<Course[]> {
-  const response = await api.get<CoursesApiResponse>('/api/moodle/my-courses')
+  const response = await api.get<ApiResponse<Course[]>>('/api/moodle/my-courses')
+  const { success, message, data } = response.data
 
-  return ensureCoursesArray(
-    response.data,
-    'Could not retrieve student courses.',
-  )
+  if (!success) throw new Error(message)
+
+  return data
 }
 
 export async function getLecturerCourses(): Promise<Course[]> {
-  const response = await api.get<CoursesApiResponse>(
+  const response = await api.get<ApiResponse<Course[]>>(
     '/api/moodle/lecturer/courses',
   )
+  const { success, message, data } = response.data
 
-  return ensureCoursesArray(
-    response.data,
-    'Could not retrieve lecturer courses.',
-  )
+  if (!success) throw new Error(message)
+
+  return data
+}
+
+export async function getLecturerCourseById(
+  courseId: string | number,
+): Promise<Course> {
+  const response = await api.get<
+    ApiResponse<{
+      course: Course
+    }>
+  >(`/api/moodle/lecturer/courses/${courseId}`)
+  const { success, message, data } = response.data
+
+  if (!success) throw new Error(message)
+
+  return data.course
 }
 
 export async function getCourseLecturers(
   courseId: string | number,
 ): Promise<CourseTeacher[]> {
-  const response = await api.get<{
-    success: boolean
-    message: string
-    data: CourseTeacher[]
-  }>(`/api/moodle/courses/${courseId}/teachers`)
-
+  const response = await api.get<ApiResponse<CourseTeacher[]>>(
+    `/api/moodle/courses/${courseId}/teachers`,
+  )
   const { success, message, data } = response.data
 
   if (!success) throw new Error(message)
-  if (!Array.isArray(data)) {
-    throw new Error('The server returned an invalid teachers response.')
-  }
 
   return data
 }

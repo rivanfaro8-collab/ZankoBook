@@ -18,6 +18,7 @@ import {
   updateSectionSubmission,
 } from '@/api/submissions'
 import { useAppTheme } from '@/store/themeStore'
+import { useUserStore } from '@/store/userStore'
 import type {
   CourseSectionItem,
   SectionItemCategory,
@@ -33,6 +34,7 @@ import SectionItemRow from './SectionItemRow'
 type Props = {
   sectionId: number
   mode: 'lecturer' | 'student'
+  isPrimaryLecturer?: boolean
 }
 
 const oldestFirst = <T extends { id: number; created_at: string }>(entries: T[]) =>
@@ -41,9 +43,14 @@ const oldestFirst = <T extends { id: number; created_at: string }>(entries: T[])
     return Number.isNaN(byDate) || byDate === 0 ? a.id - b.id : byDate
   })
 
-export default function SectionItems({ sectionId, mode }: Props) {
+export default function SectionItems({
+  sectionId,
+  mode,
+  isPrimaryLecturer = false,
+}: Props) {
   const theme = useAppTheme()
   const queryClient = useQueryClient()
+  const user = useUserStore((state) => state.user)
   const itemsQueryKey = ['course-section-items', sectionId]
   const submissionsQueryKey = ['course-section-submissions', sectionId]
   const [modalVisible, setModalVisible] = useState(false)
@@ -191,6 +198,14 @@ export default function SectionItems({ sectionId, mode }: Props) {
   const items = oldestFirst(itemsQuery.data ?? [])
   const assignments = oldestFirst(submissionsQuery.data ?? [])
 
+  const canModifyItem = (item: CourseSectionItem) =>
+    mode === 'lecturer' &&
+    (isPrimaryLecturer || item.created_by?.user_id === user?.id)
+
+  const canModifyAssignment = (assignment: SectionSubmission) =>
+    mode === 'lecturer' &&
+    (isPrimaryLecturer || assignment.created_by?.user_id === user?.id)
+
   return (
     <View style={styles.container}>
       {items.length === 0 && assignments.length === 0 && (
@@ -202,6 +217,7 @@ export default function SectionItems({ sectionId, mode }: Props) {
           key={`item-${item.id}`}
           item={item}
           mode={mode}
+          canModify={canModifyItem(item)}
           onEdit={(selected) => {
             setEditingAssignment(null)
             setEditingItem(selected)
@@ -216,6 +232,7 @@ export default function SectionItems({ sectionId, mode }: Props) {
           key={`assignment-${assignment.id}`}
           assignment={assignment}
           mode={mode}
+          canModify={canModifyAssignment(assignment)}
           onEdit={(selected) => {
             setEditingItem(null)
             setEditingAssignment(selected)

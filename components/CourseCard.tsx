@@ -23,6 +23,14 @@ const getCourseNameFontSize = (name: string) => {
   return 23
 }
 
+
+const formatTeacherRole = (role: Course['role']) => {
+  if (!role) return null
+  if (role === 'primary_lecturer') return 'Primary lecturer'
+  if (role === 'assistant_lecturer') return 'Assistant lecturer'
+  return 'Lab instructor'
+}
+
 const getCourseCodeFontSize = (code: string) => {
   const length = code.trim().length
 
@@ -43,6 +51,7 @@ export default function CourseCard({
   const courseColor = getCourseColor(course)
   const creditLabel = course.credit_hours === 1 ? 'credit' : 'credits'
   const studentLabel = course.students_count === 1 ? 'student' : 'students'
+  const teacherRoleLabel = formatTeacherRole(course.role)
 
   return (
     <Pressable
@@ -123,6 +132,15 @@ export default function CourseCard({
             {course.name}
           </ThemedText>
         </View>
+
+        {teacherRoleLabel && (
+          <View style={[styles.roleBadge, { borderColor: courseColor }]}>
+            <Ionicons name='person-outline' size={14} color={courseColor} />
+            <ThemedText title style={[styles.roleText, { color: courseColor }]}>
+              {teacherRoleLabel}
+            </ThemedText>
+          </View>
+        )}
 
         <View style={styles.detailsRow}>
           <View style={styles.detailItem}>
@@ -210,6 +228,18 @@ const styles = StyleSheet.create({
     lineHeight: 29,
     fontWeight: '800',
   },
+  roleBadge: {
+    alignSelf: 'flex-start',
+    minHeight: 28,
+    borderWidth: 1,
+    borderRadius: 9,
+    paddingHorizontal: 9,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 10,
+  },
+  roleText: { fontSize: 12, fontWeight: '800' },
   detailsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

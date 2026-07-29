@@ -7,14 +7,13 @@ type UserStore = {
   token: string | null
   setUser: (user: User | null) => void
   setToken: (token: string | null) => void
+  clearAuth: () => void
 }
 
 export const useUserStore = create<UserStore>((set) => ({
   user: null,
   token: null,
-
   setUser: (user) => set({ user }),
   setToken: (token) => set({ token }),
+  clearAuth: () => set({ user: null, token: null }),
 }))
-
-//creates shared storage for logged-in user and token

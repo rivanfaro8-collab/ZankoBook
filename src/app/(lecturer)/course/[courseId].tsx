@@ -3,9 +3,10 @@ import { useLocalSearchParams } from 'expo-router'
 import CoursePageShell from '../../../../components/CoursePageShell'
 
 export default function LecturerCoursePage() {
-  const { courseId, courseName } = useLocalSearchParams<{
+  const { courseId, courseName, teacherRole } = useLocalSearchParams<{
     courseId?: string
     courseName?: string
+    teacherRole?: string
   }>()
 
   return (
@@ -13,6 +14,7 @@ export default function LecturerCoursePage() {
       courseId={Number(courseId) || 0}
       courseName={courseName ?? 'Course'}
       attendanceMode='lecturer'
+      teacherRole={teacherRole}
     />
   )
 }

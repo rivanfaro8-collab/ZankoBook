@@ -5,7 +5,8 @@ import type {
   LoginPayload,
   LoginResponse,
   LoginResult,
-  UserRole,
+  GetProfileResponse,
+  User,
 } from '@/types/auth'
 
 type LogoutResponse = {
@@ -55,25 +56,20 @@ export async function login(payload: LoginPayload): Promise<LoginResult> {
     payload,
   )
 
-  const result = response.data
+  const { success, message, data } = response.data
 
-  if (!result.success) {
-    throw new Error(result.message || 'Login failed')
-  }
+  if (!success) throw new Error(message || 'Login failed')
 
-  const backendRole = result.data.user.roles[0]?.name?.toLowerCase()
+  return data
+}
 
-  if (backendRole !== 'student' && backendRole !== 'lecturer') {
-    throw new Error('This account does not have a supported ZankoBook role.')
-  }
+export async function getProfile(): Promise<User> {
+  const response = await api.get<GetProfileResponse>('/api/auth/me')
+  const { success, message, data } = response.data
 
-  return {
-    token: result.data.token,
-    user: {
-      ...result.data.user,
-      role: backendRole as UserRole,
-    },
-  }
+  if (!success) throw new Error(message)
+
+  return data
 }
 
 export async function logout(): Promise<void> {

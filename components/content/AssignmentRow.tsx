@@ -14,6 +14,7 @@ import StudentSubmissionPanel, { isAssignmentClosed } from './StudentSubmissionP
 type Props = {
   assignment: SectionSubmission
   mode: 'lecturer' | 'student'
+  canModify: boolean
   onEdit: (assignment: SectionSubmission) => void
   onDelete: (assignment: SectionSubmission) => void
   onDeleteAttachment: (attachmentId: number, fileName: string) => void
@@ -28,6 +29,7 @@ const readableSize = (bytes: number) => {
 export default function AssignmentRow({
   assignment,
   mode,
+  canModify,
   onEdit,
   onDelete,
   onDeleteAttachment,
@@ -82,7 +84,7 @@ export default function AssignmentRow({
           </View>
         </View>
 
-        {mode === 'lecturer' && (
+        {mode === 'lecturer' && canModify && (
           <View style={styles.actions}>
             <Pressable
               hitSlop={7}
@@ -160,7 +162,7 @@ export default function AssignmentRow({
                     <Ionicons name='open-outline' size={17} color={theme.primary} />
                   </Pressable>
 
-                  {mode === 'lecturer' && (
+                  {mode === 'lecturer' && canModify && (
                     <Pressable
                       hitSlop={7}
                       onPress={() => onDeleteAttachment(attachment.id, attachment.file_name)}

@@ -42,9 +42,6 @@ const getBackendErrorMessage = (data: unknown): string | undefined => {
 
 const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 api.interceptors.request.use((config) => {
@@ -61,6 +58,10 @@ api.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
     if (axios.isAxiosError(error)) {
+      if (error.response?.status === 401) {
+        useUserStore.getState().clearAuth()
+      }
+
       const backendMessage = getBackendErrorMessage(error.response?.data)
 
       if (backendMessage) {

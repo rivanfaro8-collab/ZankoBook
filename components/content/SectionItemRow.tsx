@@ -15,6 +15,7 @@ import { getItemCategory } from './SectionItemModal'
 type Props = {
   item: CourseSectionItem
   mode: 'lecturer' | 'student'
+  canModify: boolean
   onEdit: (item: CourseSectionItem) => void
   onDelete: (item: CourseSectionItem) => void
 }
@@ -24,7 +25,13 @@ const safeFileName = (item: CourseSectionItem) => {
   return raw.replace(/[\\/:*?"<>|]/g, '_')
 }
 
-export default function SectionItemRow({ item, mode, onEdit, onDelete }: Props) {
+export default function SectionItemRow({
+  item,
+  mode,
+  canModify,
+  onEdit,
+  onDelete,
+}: Props) {
   const theme = useAppTheme()
   const token = useUserStore((state) => state.token)
   const category = getItemCategory(item)
@@ -216,7 +223,7 @@ export default function SectionItemRow({ item, mode, onEdit, onDelete }: Props) 
         </View>
 
         <View style={styles.actions}>
-          {mode === 'lecturer' && (
+          {mode === 'lecturer' && canModify && (
             <>
               <Pressable
                 hitSlop={7}

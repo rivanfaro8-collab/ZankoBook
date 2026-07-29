@@ -43,8 +43,8 @@ export default function ProfileScreen() {
   const faculty = primaryScope?.scope?.faculty?.name ?? 'Not assigned'
   const university =
     primaryScope?.scope?.faculty?.university?.name ?? 'Not assigned'
-  const role = user?.role
-    ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+  const role = user?.roles?.[0]?.name
+    ? user.roles[0].name.charAt(0).toUpperCase() + user.roles[0].name.slice(1)
     : 'Not assigned'
 
   return (

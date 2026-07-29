@@ -51,12 +51,19 @@ export default function Login() {
         )
       })
 
-      if (user.role === 'lecturer') {
+      const role = user.roles[0]?.name
+
+      if (role === 'lecturer') {
         router.replace('/(lecturer)/Dashboard' as Href)
         return
       }
 
-      router.replace('/(student)/Dashboard' as Href)
+      if (role === 'student') {
+        router.replace('/(student)/Dashboard' as Href)
+        return
+      }
+
+      Alert.alert('Login failed', 'This account does not have a supported ZankoBook role.')
     },
 
     onError: (error) => {
