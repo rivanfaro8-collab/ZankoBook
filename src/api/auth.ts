@@ -28,6 +28,27 @@ type ValidationErrorResponse = {
   errors?: Record<string, string[]>
 }
 
+
+type ForgotPasswordResponse = {
+  success?: boolean
+  message?: string
+}
+
+export async function forgotPassword(email: string): Promise<string> {
+  const response = await api.post<ForgotPasswordResponse>(
+    '/api/auth/forget-password',
+    { email },
+  )
+
+  const { success, message } = response.data
+
+  if (success === false) {
+    throw new Error(message || 'Unable to send the password reset request.')
+  }
+
+  return message || 'Password reset instructions have been sent to your email.'
+}
+
 export async function login(payload: LoginPayload): Promise<LoginResult> {
   const response = await api.post<LoginResponse>(
     '/api/auth/moodle/login',

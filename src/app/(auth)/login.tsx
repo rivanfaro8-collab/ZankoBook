@@ -1,10 +1,21 @@
+import { Ionicons } from '@expo/vector-icons'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter, type Href } from 'expo-router'
-import { useState } from 'react'
-import { Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
+import { useRef, useState } from 'react'
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native'
 
 import { login } from '@/api/auth'
 import { saveToken } from '@/lib/authStorage'
+import { useAppTheme } from '@/store/themeStore'
 import { useUserStore } from '@/store/userStore'
 
 import ThemedButton from '../../../components/ThemedButton'
@@ -15,19 +26,21 @@ import ThemedView from '../../../components/ThemedView'
 
 export default function Login() {
   const router = useRouter()
+  const theme = useAppTheme()
+  const emailInputRef = useRef<TextInput>(null)
+  const passwordInputRef = useRef<TextInput>(null)
 
   const setUser = useUserStore((state) => state.setUser)
   const setToken = useUserStore((state) => state.setToken)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isPasswordHidden, setIsPasswordHidden] = useState(false)
 
   const loginMutation = useMutation({
     mutationFn: login,
 
     onSuccess: ({ token, user }) => {
-      // Update in-memory auth immediately so navigation does not wait for the
-      // comparatively slow Android SecureStore write.
       setToken(token)
       setUser(user)
 
@@ -78,68 +91,97 @@ export default function Login() {
     <ThemedView style={styles.screen}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardView}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 12 : 0}
+        style={styles.keyboardArea}
       >
-        <ThemedLogo style={styles.logo} />
-        <ThemedText title style={styles.title}>
-          Welcome to ZankoBook
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>{'\n'}</ThemedText>
-        <ThemedText style={styles.subtitle}>{'\n'}</ThemedText>
-        <ThemedText title style={styles.title}>
-          Welcome to ZankoBook
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Sign in to continue your learning journey.{'\n'}
-        </ThemedText>
-
-        <ThemedTextInput
-          value={email}
-          onChangeText={setEmail}
-          placeholder='Email'
-          autoCapitalize='none'
-          autoCorrect={false}
-          keyboardType='email-address'
-          autoComplete='email'
-          textContentType='emailAddress'
-          returnKeyType='next'
-          style={styles.input}
-        />
-
-        <ThemedTextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder='Password'
-          secureTextEntry
-          autoCapitalize='none'
-          autoCorrect={false}
-          autoComplete='password'
-          textContentType='password'
-          returnKeyType='done'
-          onSubmitEditing={handleLogin}
-          style={styles.input}
-        />
-
-        <Link
-          href={'/forgot-password' as Href}
-          style={styles.forgotPasswordLink}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps='handled'
+          keyboardDismissMode={
+            Platform.OS === 'ios' ? 'interactive' : 'on-drag'
+          }
+          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+          showsVerticalScrollIndicator={false}
         >
-          <ThemedText style={styles.forgotPasswordText}>
-            Forgot password?
-          </ThemedText>
-        </Link>
+          <View style={styles.brandingBlock}></View>
+          <ThemedLogo style={styles.logo} />
 
-        <ThemedButton
-          onPress={handleLogin}
-          accessibilityRole='button'
-          accessibilityLabel='Log in'
-          disabled={loginMutation.isPending}
-          style={styles.loginButton}
-        >
-          <ThemedText style={styles.buttonText}>
-            {loginMutation.isPending ? 'Logging in...' : 'Login'}
-          </ThemedText>
-        </ThemedButton>
+          <View style={styles.formContent}>
+            <Pressable
+              onPress={() => emailInputRef.current?.focus()}
+              style={styles.inputContainer}
+            >
+              <ThemedTextInput
+                ref={emailInputRef}
+                value={email}
+                onChangeText={setEmail}
+                placeholder='Email'
+                autoCapitalize='none'
+                autoCorrect={false}
+                keyboardType='email-address'
+                autoComplete='email'
+                textContentType='emailAddress'
+                returnKeyType='next'
+                blurOnSubmit={false}
+                onSubmitEditing={() => passwordInputRef.current?.focus()}
+                style={styles.input}
+              />
+            </Pressable>
+
+            <View style={styles.passwordContainer}>
+              <ThemedTextInput
+                ref={passwordInputRef}
+                value={password}
+                onChangeText={setPassword}
+                placeholder='Password'
+                secureTextEntry={isPasswordHidden}
+                autoCapitalize='none'
+                autoCorrect={false}
+                autoComplete='password'
+                textContentType='password'
+                returnKeyType='done'
+                onSubmitEditing={handleLogin}
+                style={styles.passwordInput}
+              />
+              <Pressable
+                onPress={() => setIsPasswordHidden((hidden) => !hidden)}
+                accessibilityRole='button'
+                accessibilityLabel={
+                  isPasswordHidden ? 'Show password' : 'Hide password'
+                }
+                hitSlop={10}
+                style={styles.passwordToggle}
+              >
+                <Ionicons
+                  name={isPasswordHidden ? 'eye-outline' : 'eye-off-outline'}
+                  size={23}
+                  color={theme.text}
+                />
+              </Pressable>
+            </View>
+
+            <Link
+              href={'/forgot-password' as Href}
+              style={styles.forgotPasswordLink}
+            >
+              <ThemedText style={styles.forgotPasswordText}>
+                Forgot password?
+              </ThemedText>
+            </Link>
+
+            <ThemedButton
+              onPress={handleLogin}
+              accessibilityRole='button'
+              accessibilityLabel='Log in'
+              disabled={loginMutation.isPending}
+              style={styles.loginButton}
+            >
+              <ThemedText style={styles.buttonText}>
+                {loginMutation.isPending ? 'Logging in...' : 'Login'}
+              </ThemedText>
+            </ThemedButton>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </ThemedView>
   )
@@ -149,41 +191,64 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  keyboardView: {
+  keyboardArea: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 36,
+  },
+  brandingBlock: {
+    minHeight: 270,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    paddingTop: 52,
+    paddingBottom: 26,
     paddingHorizontal: 20,
   },
   logo: {
     width: 132,
-    height: 146,
+    height: 145,
     resizeMode: 'contain',
-    marginBottom: 22,
   },
-  title: {
-    fontSize: 26,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 8,
+  formContent: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 24,
   },
-  subtitle: {
-    width: '80%',
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  input: {
+  inputContainer: {
     width: '80%',
     marginBottom: 14,
+    zIndex: 2,
+    elevation: 2,
+  },
+  input: {
+    width: '100%',
+  },
+  passwordContainer: {
+    width: '80%',
+    position: 'relative',
+    marginBottom: 14,
+  },
+  passwordInput: {
+    width: '100%',
+    paddingRight: 54,
+  },
+  passwordToggle: {
+    position: 'absolute',
+    right: 16,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   forgotPasswordLink: {
     alignSelf: 'flex-end',
     width: '80%',
     marginTop: 1,
+    marginRight: '10%',
     marginBottom: 12,
-    marginRight: 40,
   },
   forgotPasswordText: {
     textAlign: 'right',
@@ -192,7 +257,6 @@ const styles = StyleSheet.create({
   loginButton: {
     width: '80%',
     alignItems: 'center',
-    marginTop: 0,
   },
   buttonText: {
     color: '#FFFFFF',
