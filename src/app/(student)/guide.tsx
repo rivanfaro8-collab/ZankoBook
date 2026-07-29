@@ -1,24 +1,77 @@
-import { StyleSheet } from 'react-native'
+import RoleGuideScreen, {
+  type GuideSection,
+} from '../../../components/guide/RoleGuideScreen'
 
-import SimpleBackHeader from '../../../components/SimpleBackHeader'
-import ThemedText from '../../../components/ThemedText'
-import ThemedView from '../../../components/ThemedView'
+const studentSections: GuideSection[] = [
+  {
+    icon: 'grid-outline',
+    title: 'Getting Started',
+    items: [
+      {
+        title: 'Open your dashboard',
+        description: 'View your enrolled courses and open a course to see its learning content.',
+      },
+      {
+        title: 'Use the navigation tabs',
+        description: 'Move quickly between Dashboard, Calendar, Requests, and Profile.',
+      },
+    ],
+  },
+  {
+    icon: 'book-outline',
+    title: 'Courses & Assignments',
+    items: [
+      {
+        title: 'Review course sections',
+        description: 'Open each section to read materials, view resources, and check assignments.',
+      },
+      {
+        title: 'Submit your work',
+        description: 'Open an assignment, attach the required file, and confirm that your submission was uploaded.',
+      },
+      {
+        title: 'Check grades and feedback',
+        description: 'Return to the course to review published grades and lecturer feedback.',
+      },
+    ],
+  },
+  {
+    icon: 'calendar-outline',
+    title: 'Calendar & Attendance',
+    items: [
+      {
+        title: 'Follow upcoming events',
+        description: 'Use the calendar to view course dates, deadlines, and scheduled activities.',
+      },
+      {
+        title: 'Review attendance',
+        description: 'Check your attendance information inside courses where attendance is available.',
+      },
+    ],
+  },
+  {
+    icon: 'document-text-outline',
+    title: 'Requests & Downloads',
+    items: [
+      {
+        title: 'Send academic requests',
+        description: 'Use Requests to create a new request and track its current status.',
+      },
+      {
+        title: 'Find saved files',
+        description: 'Downloaded course files are available from the side menu under Downloaded.',
+      },
+    ],
+  },
+]
 
 export default function StudentGuide() {
   return (
-    <ThemedView style={styles.screen}>
-      <SimpleBackHeader />
-      <ThemedView style={styles.content}>
-        <ThemedText title style={styles.title}>Student Guide</ThemedText>
-        <ThemedText style={styles.body}>Student help and guide content will be added here.</ThemedText>
-      </ThemedView>
-    </ThemedView>
+    <RoleGuideScreen
+      title='Student Guide'
+      intro='A quick guide to the main tools you will use during your studies.'
+      sections={studentSections}
+      tip='Check your dashboard and calendar regularly so you do not miss newly added content, deadlines, or updates.'
+    />
   )
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  content: { flex: 1, padding: 22 },
-  title: { fontSize: 28, fontWeight: '800', marginBottom: 10 },
-  body: { fontSize: 16, lineHeight: 24 },
-})
