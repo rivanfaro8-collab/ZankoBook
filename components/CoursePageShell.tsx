@@ -18,6 +18,7 @@ type CoursePageShellProps = {
   courseId: number
   courseName: string
   attendanceMode?: 'lecturer' | 'student'
+  teacherRole?: string
 }
 
 const sections: Array<{ key: CourseSection; label: string }> = [
@@ -40,6 +41,7 @@ export default function CoursePageShell({
   courseId,
   courseName,
   attendanceMode = 'student',
+  teacherRole,
 }: CoursePageShellProps) {
   const router = useRouter()
   const theme = useAppTheme()
@@ -165,7 +167,11 @@ export default function CoursePageShell({
       </View>
 
       {activeSection === 'content' ? (
-        <CourseContentSection courseId={courseId} mode={attendanceMode} />
+        <CourseContentSection
+          courseId={courseId}
+          mode={attendanceMode}
+          teacherRole={teacherRole}
+        />
       ) : activeSection === 'attendance' ? (
         attendanceMode === 'lecturer' ? (
           <LecturerAttendanceSection courseId={courseId} />

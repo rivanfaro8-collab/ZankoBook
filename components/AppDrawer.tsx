@@ -81,7 +81,7 @@ export default function AppDrawer({ role, onClose }: AppDrawerProps) {
   const universityName =
     user?.scopes?.[0]?.scope?.faculty?.university?.name ??
     'University not assigned'
-  const displayedRole = user?.role ?? role
+  const displayedRole = user?.roles?.[0]?.name ?? role
 
   const initials = userName.split(' ')
     .map((part) => part[0])

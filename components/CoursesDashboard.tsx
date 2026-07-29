@@ -72,6 +72,7 @@ export default function CoursesDashboard({ role }: CoursesDashboardProps) {
           params: {
             courseId: String(item.id),
             courseName: item.name,
+            teacherRole: item.role ?? '',
           },
         })
       }
