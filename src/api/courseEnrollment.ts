@@ -10,7 +10,13 @@ export async function getAvailableCoursesToEnroll(): Promise<AvailableCoursesDat
 
   if (!success) throw new Error(message)
 
-  return data
+  return {
+    ...data,
+    courses: (data?.courses ?? []).map((course) => ({
+      ...course,
+      teachers: course.teachers ?? [],
+    })),
+  }
 }
 
 export async function submitCourseSelection(

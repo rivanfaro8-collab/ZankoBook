@@ -200,7 +200,7 @@ function EnrollmentCourseCard({
   onPress: () => void
 }) {
   const theme = useAppTheme()
-  const teacherNames = course.teachers
+  const teacherNames = (course.teachers ?? [])
     .map((teacher) => teacher.user?.name)
     .filter(Boolean)
     .join(', ')
