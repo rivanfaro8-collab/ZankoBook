@@ -56,6 +56,7 @@ export default function LecturerGradesSection({ courseId, teacherRole }: Props) 
   const theme = useAppTheme()
   const isOnline = useNetworkStore((state) => state.isOnline)
   const isPrimaryLecturer = teacherRole === 'primary_lecturer'
+  const isReadOnly = !isPrimaryLecturer
   const queryClient = useQueryClient()
   const [activitiesVisible, setActivitiesVisible] = useState(false)
   const [grades, setGrades] = useState<GradeState>({})
@@ -73,7 +74,7 @@ export default function LecturerGradesSection({ courseId, teacherRole }: Props) 
     gradebookQuery.data.students.forEach((student) => {
       next[student.id] = {}
       gradebookQuery.data.assessments.forEach((assessment) => {
-        const mark = student.marks.find(
+        const mark = (student.marks ?? []).find(
           (entry) => entry.assessment_id === assessment.id,
         )?.mark
         next[student.id][assessment.id] =
@@ -135,6 +136,8 @@ export default function LecturerGradesSection({ courseId, teacherRole }: Props) 
     assessment: GradebookAssessment,
     rawValue: string,
   ) => {
+    if (isReadOnly) return
+
     const cleaned = rawValue.replace(/[^0-9.]/g, '')
     let value: number | null = cleaned === '' ? null : Number(cleaned)
     if (value !== null && !Number.isFinite(value)) value = null
@@ -166,6 +169,8 @@ export default function LecturerGradesSection({ courseId, teacherRole }: Props) 
   }
 
   const saveMarks = () => {
+    if (isReadOnly) return
+
     const payload: SaveGradebookPayload = {
       academic_year_id: 1,
       marks: students.flatMap((student) =>
@@ -224,21 +229,27 @@ export default function LecturerGradesSection({ courseId, teacherRole }: Props) 
         <Ionicons name='clipboard-outline' size={48} color={theme.primary} />
         <ThemedText title style={styles.centerTitle}>No assessments yet</ThemedText>
         <ThemedText style={styles.emptyDescription}>
-          Add quizzes, assignments, exams, or activities before recording marks.
+          {isPrimaryLecturer
+            ? 'Add quizzes, assignments, exams, or activities before recording marks.'
+            : 'No assessments are currently available to view.'}
         </ThemedText>
-        <Pressable
-          onPress={() => setActivitiesVisible(true)}
-          style={[styles.retryButton, { backgroundColor: theme.primary }]}
-        >
-          <Ionicons name='add' size={19} color='#FFFFFF' />
-          <ThemedText title style={styles.whiteText}>Add assessment</ThemedText>
-        </Pressable>
-        <EditAssessmentsModal
-          visible={activitiesVisible}
-          courseId={courseId}
-          assessments={assessments}
-          onClose={() => setActivitiesVisible(false)}
-        />
+        {isPrimaryLecturer && (
+          <>
+            <Pressable
+              onPress={() => setActivitiesVisible(true)}
+              style={[styles.retryButton, { backgroundColor: theme.primary }]}
+            >
+              <Ionicons name='add' size={19} color='#FFFFFF' />
+              <ThemedText title style={styles.whiteText}>Add assessment</ThemedText>
+            </Pressable>
+            <EditAssessmentsModal
+              visible={activitiesVisible}
+              courseId={courseId}
+              assessments={assessments}
+              onClose={() => setActivitiesVisible(false)}
+            />
+          </>
+        )}
       </View>
     )
   }
@@ -258,38 +269,58 @@ export default function LecturerGradesSection({ courseId, teacherRole }: Props) 
     >
       <View style={styles.toolbar}>
         <View>
-          <ThemedText style={styles.helperText}>Tap any cell to enter a mark</ThemedText>
+          <ThemedText style={styles.helperText}>
+            {isReadOnly ? 'Read-only gradebook' : 'Tap any cell to enter a mark'}
+          </ThemedText>
           <ThemedText title style={[styles.weightText, { color: theme.primary }]}>
             Total weight: {formatNumber(totalWeight)}%
           </ThemedText>
         </View>
 
-        <Pressable
-          onPress={() => {
-            if (!hasUnsavedMarks) {
-              setActivitiesVisible(true)
-              return
-            }
-            Alert.alert(
-              'Unsaved marks',
-              'Save or discard your mark changes before editing activities.',
-              [
-                { text: 'Keep editing', style: 'cancel' },
-                { text: 'Discard marks', style: 'destructive', onPress: () => {
-                  setGrades(baseline)
-                  setActivitiesVisible(true)
-                } },
-              ],
-            )
-          }}
-          style={[styles.editButton, { backgroundColor: theme.uiBackground, borderColor: theme.border }]}
-        >
-          <Ionicons name='create-outline' size={18} color={theme.primary} />
-          <ThemedText title style={{ color: theme.primary }}>Edit activities</ThemedText>
-        </Pressable>
+        {isReadOnly ? (
+          <View style={[styles.readOnlyNotice, { borderColor: theme.border }]}> 
+            <Ionicons name='eye-outline' size={19} color={theme.text} />
+            <ThemedText style={styles.readOnlyText}>
+              Assistant lecturers and lab instructors can view this gradebook, but marks and assessments can only be changed by the primary lecturer.
+            </ThemedText>
+          </View>
+        ) : (
+          <Pressable
+            onPress={() => {
+              if (!hasUnsavedMarks) {
+                setActivitiesVisible(true)
+                return
+              }
+              Alert.alert(
+                'Unsaved marks',
+                'Save or discard your mark changes before editing activities.',
+                [
+                  { text: 'Keep editing', style: 'cancel' },
+                  { text: 'Discard marks', style: 'destructive', onPress: () => {
+                    setGrades(baseline)
+                    setActivitiesVisible(true)
+                  } },
+                ],
+              )
+            }}
+            style={[styles.editButton, { backgroundColor: theme.uiBackground, borderColor: theme.border }]}
+          >
+            <Ionicons name='create-outline' size={18} color={theme.primary} />
+            <ThemedText title style={{ color: theme.primary }}>Edit activities</ThemedText>
+          </Pressable>
+        )}
       </View>
 
-      <View style={[styles.tableFrame, { borderColor: theme.border, backgroundColor: theme.background }]}>
+      <View
+        style={[
+          styles.tableFrame,
+          {
+            borderColor: isReadOnly ? '#9CA3AF' : theme.border,
+            backgroundColor: isReadOnly ? 'rgba(128, 128, 128, 0.14)' : theme.background,
+            opacity: isReadOnly ? 0.82 : 1,
+          },
+        ]}
+      >
         <ScrollView horizontal showsHorizontalScrollIndicator>
           <View>
             <View style={[styles.tableRow, styles.headerRow, { borderBottomColor: theme.border }]}>
@@ -341,13 +372,15 @@ export default function LecturerGradesSection({ courseId, teacherRole }: Props) 
                           keyboardType='decimal-pad'
                           placeholder='—'
                           placeholderTextColor={theme.text}
-                          editable={!saveMutation.isPending}
+                          editable={isPrimaryLecturer && !saveMutation.isPending}
                           style={[
                             styles.markInput,
                             {
                               color: theme.title,
-                              backgroundColor: theme.uiBackground,
-                              borderColor: theme.border,
+                              backgroundColor: isReadOnly
+                                ? 'rgba(128, 128, 128, 0.22)'
+                                : theme.uiBackground,
+                              borderColor: isReadOnly ? '#9CA3AF' : theme.border,
                             },
                           ]}
                         />
@@ -372,38 +405,40 @@ export default function LecturerGradesSection({ courseId, teacherRole }: Props) 
         </ScrollView>
       </View>
 
-      <View style={styles.footerActions}>
-        <Pressable
-          disabled={!hasUnsavedMarks || saveMutation.isPending}
-          onPress={saveMarks}
-          style={[
-            styles.saveButton,
-            {
-              backgroundColor: theme.primary,
-              opacity: !hasUnsavedMarks || saveMutation.isPending ? 0.45 : 1,
-            },
-          ]}
-        >
-          {saveMutation.isPending ? (
-            <ActivityIndicator color='#FFFFFF' />
-          ) : (
-            <>
-              <Ionicons name='save-outline' size={20} color='#FFFFFF' />
-              <ThemedText title style={styles.whiteText}>Save marks</ThemedText>
-            </>
-          )}
-        </Pressable>
-
-        {hasUnsavedMarks && (
+      {isPrimaryLecturer && (
+        <View style={styles.footerActions}>
           <Pressable
-            disabled={saveMutation.isPending}
-            onPress={discardMarks}
-            style={[styles.discardButton, { borderColor: theme.danger }]}
+            disabled={!hasUnsavedMarks || saveMutation.isPending}
+            onPress={saveMarks}
+            style={[
+              styles.saveButton,
+              {
+                backgroundColor: theme.primary,
+                opacity: !hasUnsavedMarks || saveMutation.isPending ? 0.45 : 1,
+              },
+            ]}
           >
-            <ThemedText title style={{ color: theme.danger }}>Discard changes</ThemedText>
+            {saveMutation.isPending ? (
+              <ActivityIndicator color='#FFFFFF' />
+            ) : (
+              <>
+                <Ionicons name='save-outline' size={20} color='#FFFFFF' />
+                <ThemedText title style={styles.whiteText}>Save marks</ThemedText>
+              </>
+            )}
           </Pressable>
-        )}
-      </View>
+
+          {hasUnsavedMarks && (
+            <Pressable
+              disabled={saveMutation.isPending}
+              onPress={discardMarks}
+              style={[styles.discardButton, { borderColor: theme.danger }]}
+            >
+              <ThemedText title style={{ color: theme.danger }}>Discard changes</ThemedText>
+            </Pressable>
+          )}
+        </View>
+      )}
 
       {isPrimaryLecturer && (
         <View
@@ -452,12 +487,14 @@ export default function LecturerGradesSection({ courseId, teacherRole }: Props) 
         </View>
       )}
 
-      <EditAssessmentsModal
-        visible={activitiesVisible}
-        courseId={courseId}
-        assessments={assessments}
-        onClose={() => setActivitiesVisible(false)}
-      />
+      {isPrimaryLecturer && (
+        <EditAssessmentsModal
+          visible={activitiesVisible}
+          courseId={courseId}
+          assessments={assessments}
+          onClose={() => setActivitiesVisible(false)}
+        />
+      )}
     </ScrollView>
   )
 }
@@ -473,6 +510,8 @@ const styles = StyleSheet.create({
   whiteText: { color: '#FFFFFF', fontWeight: '800' },
   toolbar: { gap: 12, marginBottom: 14 },
   helperText: { fontSize: 12 },
+  readOnlyNotice: { borderWidth: 1, borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 9, backgroundColor: 'rgba(128, 128, 128, 0.12)' },
+  readOnlyText: { flex: 1, fontSize: 12, lineHeight: 18 },
   weightText: { marginTop: 3, fontSize: 14, fontWeight: '800' },
   editButton: { alignSelf: 'flex-start', minHeight: 44, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 7 },
   tableFrame: { borderWidth: 1, borderRadius: 18, overflow: 'hidden' },

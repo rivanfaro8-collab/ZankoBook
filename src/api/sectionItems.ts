@@ -111,7 +111,7 @@ export async function updateSectionItem(
 
 export async function deleteSectionItem(itemId: string | number) {
   const response = await api.delete<ApiResponse<unknown>>(
-    `/api/section-items/${itemId}`,
+    `/api/moodle/section-items/${itemId}`,
   )
 
   return unwrap(response.data, 'Could not delete the section item.')
