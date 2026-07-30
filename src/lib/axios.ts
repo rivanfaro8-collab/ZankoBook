@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+import { useNetworkStore } from '../store/networkStore'
 import { useUserStore } from '../store/userStore'
 
 type ApiErrorResponse = {
@@ -46,6 +47,14 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = useUserStore.getState().token
+  const isOnline = useNetworkStore.getState().isOnline
+  const method = (config.method ?? 'get').toLowerCase()
+
+  if (!isOnline && !['get', 'head', 'options'].includes(method)) {
+    return Promise.reject(
+      new Error('Internet connection required for this action.'),
+    )
+  }
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`

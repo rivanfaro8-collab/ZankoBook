@@ -8,6 +8,7 @@ import type {
   SaveGradebookPayload,
   SaveGradebookResponse,
   StudentCourseGrades,
+  ApiResponse,
 } from '../types/grades'
 
 
@@ -66,4 +67,16 @@ export async function modifyAssessments({
   const { success, message, data } = response.data
   if (!success) throw new Error(message)
   return data
+}
+
+
+export async function sendGradesToDepartment(courseId: number): Promise<string> {
+  const response = await api.patch<ApiResponse<unknown>>(
+    `/api/moodle/courses/${courseId}/assessments/publish`,
+    { is_published: true },
+  )
+
+  const { success, message } = response.data
+  if (!success) throw new Error(message)
+  return message
 }

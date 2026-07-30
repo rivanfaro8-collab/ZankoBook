@@ -14,7 +14,7 @@ import {
 } from 'react-native'
 
 import { login } from '@/api/auth'
-import { saveToken } from '@/lib/authStorage'
+import { saveSession } from '@/lib/authStorage'
 import { useAppTheme } from '@/store/themeStore'
 import { useUserStore } from '@/store/userStore'
 
@@ -44,7 +44,7 @@ export default function Login() {
       setToken(token)
       setUser(user)
 
-      void saveToken(token).catch(() => {
+      void saveSession(token, user).catch(() => {
         Alert.alert(
           'Session warning',
           'You are logged in, but the session could not be saved on this device.',

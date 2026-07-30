@@ -14,6 +14,7 @@ import type { UserRole } from '../src/types/auth'
 import type { Course } from '../src/types/course'
 
 import CourseCard from './CourseCard'
+import CourseEnrollmentScreen from './enrollment/CourseEnrollmentScreen'
 
 type CoursesDashboardProps = {
   role: UserRole
@@ -27,6 +28,9 @@ export default function CoursesDashboard({ role }: CoursesDashboardProps) {
   const loadedScopes = useCoursePinsStore((state) => state.loadedScopes)
   const loadPins = useCoursePinsStore((state) => state.loadPins)
   const togglePin = useCoursePinsStore((state) => state.togglePin)
+
+  const isStudentEnrollmentOpen =
+    role === 'student' && Boolean(user?.scopes?.[0]?.scope?.is_open)
 
   const scopeKey = `${user?.id ?? 'guest'}:${role}`
   const pinnedIds = pinnedByScope[scopeKey] ?? []
@@ -58,6 +62,10 @@ export default function CoursesDashboard({ role }: CoursesDashboardProps) {
       })
     })
   }, [coursesQuery.data, pinnedIds])
+
+  if (isStudentEnrollmentOpen) {
+    return <CourseEnrollmentScreen />
+  }
 
   const renderCourse = ({ item }: { item: Course }) => (
     <CourseCard

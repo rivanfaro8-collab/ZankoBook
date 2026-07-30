@@ -13,6 +13,7 @@ export type AttendanceWeek = {
   end_at: string
   created_at?: string | null
   updated_at?: string | null
+  local_status?: 'pending'
 }
 
 export type CourseStudent = {

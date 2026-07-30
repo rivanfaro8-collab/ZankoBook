@@ -12,7 +12,12 @@ import {
   View,
 } from 'react-native'
 
-import { getCourseGradebook, saveStudentGrades } from '../../src/api/grades'
+import {
+  getCourseGradebook,
+  saveStudentGrades,
+  sendGradesToDepartment,
+} from '../../src/api/grades'
+import { useNetworkStore } from '../../src/store/networkStore'
 import { useAppTheme } from '../../src/store/themeStore'
 import type {
   GradebookAssessment,
@@ -22,7 +27,7 @@ import type {
 import ThemedText from '../ThemedText'
 import EditAssessmentsModal from './EditAssessmentsModal'
 
-type Props = { courseId: number }
+type Props = { courseId: number; teacherRole?: string }
 type GradeState = Record<number, Record<number, number | null>>
 
 const STUDENT_WIDTH = 170
@@ -47,8 +52,10 @@ const initials = (name: string) =>
     .join('')
     .toUpperCase()
 
-export default function LecturerGradesSection({ courseId }: Props) {
+export default function LecturerGradesSection({ courseId, teacherRole }: Props) {
   const theme = useAppTheme()
+  const isOnline = useNetworkStore((state) => state.isOnline)
+  const isPrimaryLecturer = teacherRole === 'primary_lecturer'
   const queryClient = useQueryClient()
   const [activitiesVisible, setActivitiesVisible] = useState(false)
   const [grades, setGrades] = useState<GradeState>({})
@@ -96,6 +103,21 @@ export default function LecturerGradesSection({ courseId }: Props) {
     onError: (error) => {
       Alert.alert(
         'Could not save marks',
+        error instanceof Error ? error.message : 'Please try again.',
+      )
+    },
+  })
+
+
+  const sendMutation = useMutation({
+    mutationKey: ['send-grade-to-department', courseId],
+    mutationFn: () => sendGradesToDepartment(courseId),
+    onSuccess: (message) => {
+      Alert.alert('Marks sent', message || 'Marks were sent to the department successfully.')
+    },
+    onError: (error) => {
+      Alert.alert(
+        'Could not send marks',
         error instanceof Error ? error.message : 'Please try again.',
       )
     },
@@ -383,6 +405,53 @@ export default function LecturerGradesSection({ courseId }: Props) {
         )}
       </View>
 
+      {isPrimaryLecturer && (
+        <View
+          style={[
+            styles.departmentCard,
+            { backgroundColor: theme.uiBackground, borderColor: theme.border },
+          ]}
+        >
+          <View style={styles.departmentTextBlock}>
+            <ThemedText title style={styles.departmentTitle}>
+              Send marks to department
+            </ThemedText>
+            <ThemedText style={styles.departmentDescription}>
+              Publishes the course assessments and sends the marks to your department in e-Zanko.
+            </ThemedText>
+          </View>
+
+          <Pressable
+            disabled={!isOnline || sendMutation.isPending || hasUnsavedMarks}
+            onPress={() => sendMutation.mutate()}
+            style={[
+              styles.sendButton,
+              {
+                borderColor: theme.primary,
+                opacity: !isOnline || sendMutation.isPending || hasUnsavedMarks ? 0.45 : 1,
+              },
+            ]}
+          >
+            {sendMutation.isPending ? (
+              <ActivityIndicator color={theme.primary} />
+            ) : (
+              <>
+                <Ionicons name='send-outline' size={20} color={theme.primary} />
+                <ThemedText title style={{ color: theme.primary }}>
+                  Send marks to department
+                </ThemedText>
+              </>
+            )}
+          </Pressable>
+
+          {!isOnline ? (
+            <ThemedText style={[styles.departmentHint, { color: theme.danger }]}>Online connection required.</ThemedText>
+          ) : hasUnsavedMarks ? (
+            <ThemedText style={styles.departmentHint}>Save your mark changes before sending.</ThemedText>
+          ) : null}
+        </View>
+      )}
+
       <EditAssessmentsModal
         visible={activitiesVisible}
         courseId={courseId}
@@ -423,4 +492,10 @@ const styles = StyleSheet.create({
   footerActions: { marginTop: 16, gap: 10 },
   saveButton: { minHeight: 50, borderRadius: 13, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   discardButton: { minHeight: 46, borderRadius: 13, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  departmentCard: { marginTop: 18, borderWidth: 1, borderRadius: 16, padding: 14, gap: 12 },
+  departmentTextBlock: { gap: 4 },
+  departmentTitle: { fontSize: 16, fontWeight: '900' },
+  departmentDescription: { fontSize: 13, lineHeight: 19 },
+  sendButton: { minHeight: 50, borderRadius: 13, borderWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  departmentHint: { fontSize: 12, lineHeight: 17 },
 })

@@ -18,6 +18,8 @@ import {
   deleteAttendanceWeek,
   submitAttendanceRecords,
 } from '../../src/api/attendance'
+import { enqueueAttendanceOperation } from '../../src/lib/offlineAttendanceQueue'
+import { useNetworkStore } from '../../src/store/networkStore'
 import { useAppTheme } from '../../src/store/themeStore'
 import type {
   AttendanceStatus,
@@ -34,6 +36,7 @@ type AttendanceMap = Record<number, AttendanceStatus>
 export default function LecturerAttendanceSection({ courseId }: Props) {
   const theme = useAppTheme()
   const queryClient = useQueryClient()
+  const isOnline = useNetworkStore((state) => state.isOnline)
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedWeekId, setSelectedWeekId] = useState<number | null>(null)
   const [attendance, setAttendance] = useState<AttendanceMap>({})
@@ -125,21 +128,46 @@ export default function LecturerAttendanceSection({ courseId }: Props) {
   })
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      submitAttendanceRecords(
-        {
-          attendance: Object.entries(attendance).map(([studentId, status]) => ({
-            student_id: Number(studentId),
-            status,
-          })),
-        },
-        selectedWeekId as number,
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['attendance-records', courseId, selectedWeekId],
-      })
-      Alert.alert('Saved', 'Attendance records were saved successfully.')
+    mutationFn: async () => {
+      const payload = {
+        attendance: Object.entries(attendance).map(([studentId, status]) => ({
+          student_id: Number(studentId),
+          status,
+        })),
+      }
+
+      if (!isOnline) {
+        await enqueueAttendanceOperation({
+          id: `records-${courseId}-${selectedWeekId}`,
+          type: 'save-records',
+          weekId: selectedWeekId as number,
+          courseId,
+          payload,
+          createdAt: new Date().toISOString(),
+        })
+        return 'queued' as const
+      }
+
+      await submitAttendanceRecords(payload, selectedWeekId as number)
+      return 'saved' as const
+    },
+    onSuccess: (result) => {
+      queryClient.setQueryData(
+        ['attendance-records', courseId, selectedWeekId],
+        Object.entries(attendance).map(([studentId, status]) => ({
+          student_id: Number(studentId),
+          status,
+        })),
+      )
+      if (result === 'saved') {
+        queryClient.invalidateQueries({ queryKey: ['attendance-records', courseId, selectedWeekId] })
+      }
+      Alert.alert(
+        result === 'queued' ? 'Saved offline' : 'Saved',
+        result === 'queued'
+          ? 'Attendance is stored on this device and will sync when internet returns.'
+          : 'Attendance records were saved successfully.',
+      )
     },
   })
 
@@ -220,10 +248,10 @@ export default function LecturerAttendanceSection({ courseId }: Props) {
         </Pressable>
 
         <Pressable
-          disabled={selectedWeekId === null || deleteMutation.isPending}
+          disabled={!isOnline || selectedWeekId === null || deleteMutation.isPending}
           onPress={confirmDeleteSelectedWeek}
           style={({ pressed }) => {
-            const disabled = selectedWeekId === null || deleteMutation.isPending
+            const disabled = !isOnline || selectedWeekId === null || deleteMutation.isPending
             return [
               styles.actionButton,
               {
@@ -239,7 +267,7 @@ export default function LecturerAttendanceSection({ courseId }: Props) {
             <Ionicons name='trash-outline' size={18} color='#FFFFFF' />
           )}
           <ThemedText title numberOfLines={1} style={[styles.whiteText, styles.deleteText]}>
-            {deleteMutation.isPending ? 'Deleting…' : 'Delete selected session'}
+            {!isOnline ? 'Online required' : deleteMutation.isPending ? 'Deleting…' : 'Delete selected session'}
           </ThemedText>
         </Pressable>
       </View>
@@ -281,7 +309,7 @@ export default function LecturerAttendanceSection({ courseId }: Props) {
                 numberOfLines={1}
                 style={{ color: active ? '#FFFFFF' : theme.title, fontSize: 13 }}
               >
-                {item.title}
+                {item.title}{item.local_status === 'pending' ? ' • Pending' : ''}
               </ThemedText>
             </Pressable>
           )
