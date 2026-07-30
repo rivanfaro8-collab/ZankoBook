@@ -15,7 +15,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors, type ThemeName } from '../constants/Colors'
 import { logout } from '../src/api/auth'
 import { removeSavedToken } from '../src/lib/authStorage'
+import { clearAttendanceQueue } from '../src/lib/offlineAttendanceQueue'
 import { queryClient } from '../src/lib/queryClient'
+import { clearQueryCacheFile } from '../src/lib/queryPersistence'
 import { useAppTheme, useThemeStore } from '../src/store/themeStore'
 import { useUserStore } from '../src/store/userStore'
 import ThemedText from './ThemedText'
@@ -36,7 +38,7 @@ export default function AppDrawer({ role, onClose }: AppDrawerProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const clearLocalSession = async () => {
-    await removeSavedToken()
+    await Promise.all([removeSavedToken(), clearQueryCacheFile(), clearAttendanceQueue()])
     setToken(null)
     setUser(null)
     queryClient.clear()

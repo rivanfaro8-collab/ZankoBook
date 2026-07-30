@@ -179,7 +179,7 @@ export default function CoursePageShell({
           <StudentAttendanceSection courseId={courseId} courseName={courseName} />
         )
       ) : attendanceMode === 'lecturer' ? (
-        <LecturerGradesSection courseId={courseId} />
+        <LecturerGradesSection courseId={courseId} teacherRole={teacherRole} />
       ) : (
         <StudentGradesSection courseId={courseId} courseName={courseName} />
       )}

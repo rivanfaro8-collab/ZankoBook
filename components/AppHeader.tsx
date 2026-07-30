@@ -1,12 +1,18 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Animated, Pressable, StyleSheet, View } from 'react-native'
 
+import { type AppLanguage, setAppLanguage } from '../src/i18n'
 import { useAppTheme, useThemeStore } from '../src/store/themeStore'
 import ThemedText from './ThemedText'
 import ThemedView from './ThemedView'
 
-const LANGUAGES = ['En', 'Ar', 'Ku'] as const
+const LANGUAGES: { code: AppLanguage; short: string; label: string }[] = [
+  { code: 'en', short: 'En', label: 'English' },
+  { code: 'ar', short: 'Ar', label: 'Arabic' },
+  { code: 'ckb', short: 'Ku', label: 'Kurdish (Central)' },
+]
 
 type AppHeaderProps = {
   onMenuPress?: () => void
@@ -14,7 +20,9 @@ type AppHeaderProps = {
 
 export default function AppHeader({ onMenuPress }: AppHeaderProps) {
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
-  const [selectedLanguage, setSelectedLanguage] = useState<(typeof LANGUAGES)[number]>('En')
+  const { i18n, t } = useTranslation()
+  const currentLanguage = (i18n.resolvedLanguage ?? i18n.language ?? 'en').split('-')[0] as AppLanguage
+  const selectedLanguage = LANGUAGES.find((item) => item.code === currentLanguage) ?? LANGUAGES[0]
 
   const themeMode = useThemeStore((state) => state.themeMode)
   const toggleTheme = useThemeStore((state) => state.toggleTheme)
@@ -71,7 +79,7 @@ export default function AppHeader({ onMenuPress }: AppHeaderProps) {
           <Pressable
             onPress={onMenuPress}
             accessibilityRole='button'
-            accessibilityLabel='Open menu'
+            accessibilityLabel={t('Open menu')}
             hitSlop={8}
             style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
           >
@@ -81,7 +89,7 @@ export default function AppHeader({ onMenuPress }: AppHeaderProps) {
           <Pressable
             onPress={toggleTheme}
             accessibilityRole='button'
-            accessibilityLabel='Toggle dark mode'
+            accessibilityLabel={t('Toggle dark mode')}
             hitSlop={8}
             style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
           >
@@ -117,14 +125,14 @@ export default function AppHeader({ onMenuPress }: AppHeaderProps) {
           <Pressable
             onPress={() => setLanguageMenuOpen((isOpen) => !isOpen)}
             accessibilityRole='button'
-            accessibilityLabel='Choose language'
+            accessibilityLabel={t('Choose language')}
             style={({ pressed }) => [
               styles.languageButton,
               { borderColor: theme.border },
               pressed && styles.pressed,
             ]}
           >
-            <ThemedText style={styles.languageText}>{selectedLanguage}</ThemedText>
+            <ThemedText style={styles.languageText}>{selectedLanguage.short}</ThemedText>
             <Ionicons name='chevron-down-outline' size={17} color={iconColor} />
           </Pressable>
 
@@ -137,14 +145,14 @@ export default function AppHeader({ onMenuPress }: AppHeaderProps) {
             >
               {LANGUAGES.map((language) => (
                 <Pressable
-                  key={language}
+                  key={language.code}
                   onPress={() => {
-                    setSelectedLanguage(language)
+                    void setAppLanguage(language.code)
                     setLanguageMenuOpen(false)
                   }}
                   style={({ pressed }) => [styles.languageOption, pressed && styles.pressed]}
                 >
-                  <ThemedText style={styles.languageOptionText}>{language}</ThemedText>
+                  <ThemedText style={styles.languageOptionText}>{language.short}</ThemedText>
                 </Pressable>
               ))}
             </View>

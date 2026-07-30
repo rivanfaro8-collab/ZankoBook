@@ -8,8 +8,12 @@ const studentSections: GuideSection[] = [
     title: 'Getting Started',
     items: [
       {
+        title: 'Choose courses when selection opens',
+        description: 'Review available courses, select your choices, and send one request to your department for approval.',
+      },
+      {
         title: 'Open your dashboard',
-        description: 'View your enrolled courses and open a course to see its learning content.',
+        description: 'After course selection closes, view your enrolled courses and open a course to see its learning content.',
       },
       {
         title: 'Use the navigation tabs',

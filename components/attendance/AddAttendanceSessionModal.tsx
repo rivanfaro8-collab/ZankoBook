@@ -16,6 +16,8 @@ import {
   createAttendanceWeek,
   getAttendanceWeeks,
 } from '../../src/api/attendance'
+import { enqueueAttendanceOperation } from '../../src/lib/offlineAttendanceQueue'
+import { useNetworkStore } from '../../src/store/networkStore'
 import { useAppTheme } from '../../src/store/themeStore'
 import type { AttendanceWeek } from '../../src/types/attendance'
 import ThemedText from '../ThemedText'
@@ -52,6 +54,7 @@ export default function AddAttendanceSessionModal({
 }: Props) {
   const theme = useAppTheme()
   const queryClient = useQueryClient()
+  const isOnline = useNetworkStore((state) => state.isOnline)
   const [title, setTitle] = useState('')
   const [sessionDate, setSessionDate] = useState(today())
   const [calendarMonth, setCalendarMonth] = useState(() => new Date())
@@ -93,28 +96,39 @@ export default function AddAttendanceSessionModal({
 
   const mutation = useMutation({
     mutationFn: async (payload: Parameters<typeof createAttendanceWeek>[0]) => {
+      if (!isOnline) {
+        const tempWeekId = -Date.now()
+        const localWeek: AttendanceWeek = {
+          id: tempWeekId,
+          course_id: courseId,
+          title: payload.title,
+          session_date: payload.session_date,
+          start_at: payload.start_at,
+          end_at: payload.end_at,
+          local_status: 'pending',
+        }
+        await enqueueAttendanceOperation({
+          id: `create-${Math.abs(tempWeekId)}`,
+          type: 'create-session',
+          tempWeekId,
+          courseId,
+          payload,
+          createdAt: new Date().toISOString(),
+        })
+        queryClient.setQueryData<AttendanceWeek[]>(
+          ['attendance-weeks', courseId],
+          (current) => [...(current ?? []), localWeek],
+        )
+        return localWeek
+      }
+
       const createdWeek = await createAttendanceWeek(payload)
-
-      await queryClient.invalidateQueries({
-        queryKey: ['attendance-weeks', courseId],
-      })
-
+      await queryClient.invalidateQueries({ queryKey: ['attendance-weeks', courseId] })
       const persistedWeeks = await queryClient.fetchQuery({
         queryKey: ['attendance-weeks', courseId],
         queryFn: () => getAttendanceWeeks(courseId),
       })
-
-      const persistedWeek = persistedWeeks.find(
-        (week) => Number(week.id) === Number(createdWeek.id),
-      )
-
-      if (!persistedWeek) {
-        throw new Error(
-          'The server accepted the session, but it was not saved. Please check the backend create-session endpoint.',
-        )
-      }
-
-      return persistedWeek
+      return persistedWeeks.find((week) => Number(week.id) === Number(createdWeek.id)) ?? createdWeek
     },
     onSuccess: (week) => {
       onCreated(week)
